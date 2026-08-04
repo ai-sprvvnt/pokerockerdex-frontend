@@ -1,16 +1,71 @@
-# React + Vite
+cat > README.md <<'EOF'
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# PokeRockerDex Frontend
 
-Currently, two official plugins are available:
+Interfaz de PokeRockerDex, una aplicación full stack que permite explorar información de Pokémon mediante PokéAPI y crear un equipo personal de hasta seis integrantes.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Estado del proyecto
 
-## React Compiler
+Proyecto Final de Desarrollo Web de TripleTen. Actualmente se encuentra en la etapa de planificación y preparación.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Funcionalidades previstas
 
-## Expanding the ESLint configuration
+- Explorar Pokémon en páginas de 20 resultados.
+- Buscar Pokémon por nombre o número.
+- Consultar información detallada.
+- Registrar e iniciar sesión.
+- Crear un equipo personal.
+- Agregar hasta seis Pokémon sin duplicados.
+- Editar el nombre del equipo.
+- Eliminar integrantes.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Rutas previstas
+
+- `/` — exploración y búsqueda.
+- `/pokemon/:id` — información detallada.
+- `/my-team` — equipo personal protegido.
+
+## Tecnologías previstas
+
+- React
+- Vite
+- React Router
+- JavaScript
+- CSS con metodología BEM
+- PokéAPI
+- API propia de PokeRockerDex
+
+## Instalación
+
+```bash
+git clone git@github.com:ai-sprvvnt/pokerockerdex-frontend.git
+cd pokerockerdex-frontend
+npm install
+npm run dev
+```
+
+## Scripts
+
+```bash
+npm run dev
+npm run lint
+npm run build
+npm run preview
+```
+
+## API externa
+
+La Pokédex utiliza la API externa PokéAPI (https://pokeapi.co/) para obtener información sobre los Pokémon.
+
+## Back-end
+
+El backend de PokeRockerDex se encuentra en el repositorio https://github.com/ai-sprvvnt/pokerockerdex-backend
+
+## Aviso
+
+PokeRockerDex es un proyecto educativo no oficial. No está afiliado, respaldado ni patrocinado por Nintendo, Game Freak, Creatures Inc. o The Pokémon Company.
+
+## Autor
+
+- [Felipe García](https://github.com/ai-sprvvnt)
+- [Correo]: [ai.sprvvnt@gmail.com]
