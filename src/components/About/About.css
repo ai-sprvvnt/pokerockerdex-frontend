@@ -1,0 +1,43 @@
+.about {
+  padding: 80px 20px;
+  background-color: var(--color-surface);
+}
+
+.about__container {
+  width: min(100%, 1200px);
+  margin: 0 auto;
+}
+
+.about__content {
+  max-width: 760px;
+}
+
+.about__eyebrow {
+  margin: 0 0 12px;
+  color: var(--color-primary);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.about__title {
+  margin: 0;
+  color: var(--color-heading);
+  font-size: clamp(32px, 5vw, 48px);
+}
+
+.about__description {
+  margin: 24px 0 0;
+  color: var(--color-text);
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+@media screen and (max-width: 600px) {
+  .about {
+    padding: 56px 20px;
+  }
+
+  .about__description {
+    font-size: 16px;
+  }
+}
