@@ -1,0 +1,121 @@
+.search-form {
+  margin-bottom: 40px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.search-form__field {
+  min-width: 0;
+  flex-grow: 1;
+}
+
+.search-form__label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--color-heading);
+  font-weight: 700;
+}
+
+.search-form__input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background-color: var(--color-surface);
+  color: var(--color-heading);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.search-form__input::placeholder {
+  color: var(--color-muted);
+}
+
+.search-form__input:hover {
+  border-color: var(--color-primary);
+}
+
+.search-form__input:focus {
+  border-color: var(--color-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(122, 40, 168, 0.15);
+}
+
+.search-form__input_type_error {
+  border-color: #c62828;
+}
+
+.search-form__error {
+  min-height: 18px;
+  margin-top: 6px;
+  display: block;
+  color: #c62828;
+  font-size: 13px;
+}
+
+.search-form__actions {
+  padding-top: 27px;
+  display: flex;
+  gap: 12px;
+}
+
+.search-form__button {
+  min-height: 48px;
+  padding: 0 22px;
+  border: 1px solid var(--color-primary);
+  border-radius: 8px;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.search-form__button:hover {
+  transform: translateY(-2px);
+  opacity: 0.9;
+}
+
+.search-form__button:focus-visible {
+  outline: 3px solid rgba(122, 40, 168, 0.3);
+  outline-offset: 3px;
+}
+
+.search-form__button_secondary {
+  background-color: transparent;
+  color: var(--color-primary);
+}
+
+@media screen and (max-width: 700px) {
+  .search-form {
+    flex-direction: column;
+  }
+
+  .search-form__field,
+  .search-form__actions {
+    width: 100%;
+  }
+
+  .search-form__actions {
+    padding-top: 0;
+  }
+
+  .search-form__button {
+    flex: 1;
+  }
+}
+
+@media screen and (max-width: 420px) {
+  .search-form__actions {
+    flex-direction: column;
+  }
+
+  .search-form__button {
+    width: 100%;
+  }
+}
