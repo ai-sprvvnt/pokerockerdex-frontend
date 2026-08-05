@@ -7,7 +7,8 @@
   --color-border: #ded9e4;
   --color-primary: #7a28a8;
   --color-secondary: #f0b429;
-  --font-primary: Inter, Arial, Helvetica, sans-serif;
+  --font-primary: 'Roboto', Arial, Helvetica, sans-serif;
+  --font-heading: 'Roboto Slab', Georgia, serif;
 
   font-family: var(--font-primary);
   color: var(--color-text);
@@ -33,6 +34,35 @@ body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
+  overflow-wrap: break-word;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+}
+
+::selection {
+  background-color: rgba(122, 40, 168, 0.22);
+  color: var(--color-heading);
+}
+
+a,
+button,
+input {
+  touch-action: manipulation;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+  outline: 3px solid rgba(122, 40, 168, 0.35);
+  outline-offset: 3px;
 }
 
 button,
@@ -54,4 +84,19 @@ img {
 
 #root {
   min-height: 100vh;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

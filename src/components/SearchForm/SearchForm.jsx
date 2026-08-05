@@ -6,7 +6,9 @@ function SearchForm({ onSearch }) {
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleChange = (event) => {
-    setQuery(event.target.value);
+    const nextQuery = event.target.value.slice(0, 40);
+
+    setQuery(nextQuery);
 
     if (errorMessage) {
       setErrorMessage('');
@@ -49,6 +51,11 @@ function SearchForm({ onSearch }) {
           placeholder="Ejemplo: pikachu o 25"
           value={query}
           onChange={handleChange}
+          required
+          minLength="1"
+          maxLength="40"
+          autoComplete="off"
+          aria-required="true"
           aria-describedby="pokemon-search-error"
           aria-invalid={Boolean(errorMessage)}
         />
