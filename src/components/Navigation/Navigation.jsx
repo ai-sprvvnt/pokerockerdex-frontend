@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router';
 import './Navigation.css';
 
-function Navigation() {
+function Navigation({ onResetExplorer }) {
   const getLinkClassName = ({ isActive }) =>
     `navigation__link${isActive ? ' navigation__link_active' : ''}`;
 
@@ -9,7 +9,12 @@ function Navigation() {
     <nav className="navigation" aria-label="Navegación principal">
       <ul className="navigation__list">
         <li className="navigation__item">
-          <NavLink className={getLinkClassName} end to="/">
+          <NavLink
+            className={getLinkClassName}
+            end
+            to="/"
+            onClick={onResetExplorer}
+          >
             Explorar
           </NavLink>
         </li>

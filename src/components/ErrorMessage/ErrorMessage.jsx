@@ -1,6 +1,6 @@
 import './ErrorMessage.css';
 
-function ErrorMessage() {
+function ErrorMessage({ onRetry }) {
   return (
     <section className="error-message" role="alert" aria-live="assertive">
       <h2 className="error-message__title">No pudimos cargar los datos</h2>
@@ -10,6 +10,10 @@ function ErrorMessage() {
         haya un problema de conexión o que el servidor no funcione. Por favor,
         inténtalo más tarde.
       </p>
+
+      <button className="error-message__button" type="button" onClick={onRetry}>
+        Reintentar
+      </button>
     </section>
   );
 }

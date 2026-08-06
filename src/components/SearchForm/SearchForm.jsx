@@ -1,14 +1,19 @@
 import { useState } from 'react';
 import './SearchForm.css';
 
-function SearchForm({ onSearch }) {
-  const [query, setQuery] = useState('');
+function SearchForm({
+  query,
+  onQueryChange,
+  onSearch,
+  onReset,
+  isLoading = false,
+}) {
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleChange = (event) => {
     const nextQuery = event.target.value.slice(0, 40);
 
-    setQuery(nextQuery);
+    onQueryChange(nextQuery);
 
     if (errorMessage) {
       setErrorMessage('');
@@ -17,6 +22,10 @@ function SearchForm({ onSearch }) {
 
   const handleSubmit = (event) => {
     event.preventDefault();
+
+    if (isLoading) {
+      return;
+    }
 
     const normalizedQuery = query.trim();
 
@@ -29,13 +38,21 @@ function SearchForm({ onSearch }) {
   };
 
   const handleReset = () => {
-    setQuery('');
+    if (isLoading) {
+      return;
+    }
+
     setErrorMessage('');
-    onSearch('');
+    onReset();
   };
 
   return (
-    <form className="search-form" onSubmit={handleSubmit} noValidate>
+    <form
+      className="search-form"
+      onSubmit={handleSubmit}
+      noValidate
+      aria-busy={isLoading}
+    >
       <div className="search-form__field">
         <label className="search-form__label" htmlFor="pokemon-search">
           Buscar Pokémon
@@ -58,6 +75,7 @@ function SearchForm({ onSearch }) {
           aria-required="true"
           aria-describedby="pokemon-search-error"
           aria-invalid={Boolean(errorMessage)}
+          disabled={isLoading}
         />
 
         <span
@@ -70,7 +88,11 @@ function SearchForm({ onSearch }) {
       </div>
 
       <div className="search-form__actions">
-        <button className="search-form__button" type="submit">
+        <button
+          className="search-form__button"
+          type="submit"
+          disabled={isLoading}
+        >
           Buscar
         </button>
 
@@ -78,6 +100,7 @@ function SearchForm({ onSearch }) {
           className="search-form__button search-form__button_secondary"
           type="button"
           onClick={handleReset}
+          disabled={isLoading}
         >
           Restablecer
         </button>

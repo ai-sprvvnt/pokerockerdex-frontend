@@ -1,48 +1,28 @@
-import { useState } from 'react';
 import About from '../About/About.jsx';
+import ErrorMessage from '../ErrorMessage/ErrorMessage.jsx';
 import Pagination from '../Pagination/Pagination.jsx';
 import PokemonCardList from '../PokemonCardList/PokemonCardList.jsx';
+import Preloader from '../Preloader/Preloader.jsx';
 import SearchForm from '../SearchForm/SearchForm.jsx';
 import { POKEMON_PER_PAGE } from '../../utils/constants.js';
-import { mockPokemon } from '../../utils/mockPokemon.js';
 import './Home.css';
 
-function Home() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-
-  const normalizedSearchTerm = searchTerm.toLowerCase();
-
-  const filteredPokemon = mockPokemon.filter((pokemon) => {
-    const formattedId = String(pokemon.id).padStart(3, '0');
-
-    return (
-      pokemon.name.includes(normalizedSearchTerm) ||
-      formattedId.includes(normalizedSearchTerm)
-    );
-  });
-
-  const totalPages = Math.ceil(filteredPokemon.length / POKEMON_PER_PAGE);
-
-  const firstPokemonIndex = (currentPage - 1) * POKEMON_PER_PAGE;
-
-  const visiblePokemon = filteredPokemon.slice(
-    firstPokemonIndex,
-    firstPokemonIndex + POKEMON_PER_PAGE,
-  );
-
-  const handleSearch = (query) => {
-    setSearchTerm(query);
-    setCurrentPage(1);
-  };
-
-  const handlePreviousPage = () => {
-    setCurrentPage((page) => Math.max(page - 1, 1));
-  };
-
-  const handleNextPage = () => {
-    setCurrentPage((page) => Math.min(page + 1, totalPages));
-  };
+function Home({
+  pokemon,
+  totalPokemon,
+  currentPage,
+  isLoading,
+  apiError,
+  isSearchMode,
+  searchQuery,
+  onSearchQueryChange,
+  onSearch,
+  onResetExplorer,
+  onPreviousPage,
+  onNextPage,
+  onRetry,
+}) {
+  const totalPages = Math.ceil(totalPokemon / POKEMON_PER_PAGE);
 
   return (
     <>
@@ -84,16 +64,32 @@ function Home() {
             </p>
           </div>
 
-          <SearchForm onSearch={handleSearch} />
-
-          <PokemonCardList pokemon={visiblePokemon} />
-
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPrevious={handlePreviousPage}
-            onNext={handleNextPage}
+          <SearchForm
+            query={searchQuery}
+            onQueryChange={onSearchQueryChange}
+            onSearch={onSearch}
+            onReset={onResetExplorer}
+            isLoading={isLoading}
           />
+
+          {isLoading ? (
+            <Preloader />
+          ) : apiError ? (
+            <ErrorMessage onRetry={onRetry} />
+          ) : (
+            <>
+              <PokemonCardList pokemon={pokemon} />
+
+              {!isSearchMode && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPrevious={onPreviousPage}
+                  onNext={onNextPage}
+                />
+              )}
+            </>
+          )}
         </div>
       </section>
 

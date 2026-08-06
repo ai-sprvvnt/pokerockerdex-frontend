@@ -5,11 +5,45 @@ import MyTeam from '../MyTeam/MyTeam.jsx';
 import NotFound from '../NotFound/NotFound.jsx';
 import './Main.css';
 
-function Main() {
+function Main({
+  pokemon,
+  totalPokemon,
+  currentPage,
+  isLoading,
+  apiError,
+  isSearchMode,
+  searchQuery,
+  onSearchQueryChange,
+  onSearch,
+  onResetExplorer,
+  onPreviousPage,
+  onNextPage,
+  onRetry,
+}) {
   return (
     <main className="main">
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route
+          path="/"
+          element={
+            <Home
+              pokemon={pokemon}
+              totalPokemon={totalPokemon}
+              currentPage={currentPage}
+              isLoading={isLoading}
+              apiError={apiError}
+              isSearchMode={isSearchMode}
+              searchQuery={searchQuery}
+              onSearchQueryChange={onSearchQueryChange}
+              onSearch={onSearch}
+              onResetExplorer={onResetExplorer}
+              onPreviousPage={onPreviousPage}
+              onNextPage={onNextPage}
+              onRetry={onRetry}
+            />
+          }
+        />
+
         <Route path="/pokemon/:id" element={<PokemonDetail />} />
         <Route path="/my-team" element={<MyTeam />} />
         <Route path="*" element={<NotFound />} />
