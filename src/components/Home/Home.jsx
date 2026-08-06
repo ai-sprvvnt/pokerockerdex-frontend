@@ -12,6 +12,8 @@ function Home({
   totalPokemon,
   currentPage,
   isLoading,
+  isRefreshing,
+  isCacheFallback,
   apiError,
   isSearchMode,
   searchQuery,
@@ -74,10 +76,31 @@ function Home({
 
           {isLoading ? (
             <Preloader />
-          ) : apiError ? (
+          ) : apiError && !isCacheFallback ? (
             <ErrorMessage onRetry={onRetry} />
           ) : (
             <>
+              {isRefreshing && (
+                <p
+                  className="pokemon-explorer__cache-status"
+                  role="status"
+                  aria-live="polite"
+                >
+                  Mostrando datos guardados mientras comprobamos
+                  actualizaciones.
+                </p>
+              )}
+
+              {apiError && isCacheFallback && (
+                <div className="pokemon-explorer__cache-fallback">
+                  <ErrorMessage
+                    title="No pudimos actualizar los datos"
+                    description="PokéAPI no respondió. Se muestra la última página guardada en este dispositivo."
+                    onRetry={onRetry}
+                  />
+                </div>
+              )}
+
               <PokemonCardList pokemon={pokemon} />
 
               {!isSearchMode && (

@@ -4,6 +4,7 @@ import Header from '../Header/Header.jsx';
 import Main from '../Main/Main.jsx';
 import Footer from '../Footer/Footer.jsx';
 import { getPokemonByNameOrId, getPokemonPage } from '../../utils/PokeApi.js';
+import { getPokemonPageCache, setPokemonPageCache } from '../../utils/cache.js';
 import { POKEMON_PER_PAGE } from '../../utils/constants.js';
 import './App.css';
 
@@ -17,6 +18,8 @@ function App() {
   const [activeSearchQuery, setActiveSearchQuery] = useState('');
   const [retryRequest, setRetryRequest] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isCacheFallback, setIsCacheFallback] = useState(false);
 
   const pageControllerRef = useRef(null);
   const searchControllerRef = useRef(null);
@@ -34,8 +37,23 @@ function App() {
     pageControllerRef.current = controller;
 
     const loadPokemonPage = async () => {
-      setIsLoading(true);
+      const cachedPage = getPokemonPageCache(currentPage);
+      const hasValidCache = Boolean(cachedPage);
+
       setApiError(null);
+      setIsCacheFallback(false);
+
+      if (hasValidCache) {
+        setPokemon(cachedPage.pokemon);
+        setTotalPokemon(cachedPage.count);
+        setIsLoading(false);
+        setIsRefreshing(true);
+      } else {
+        setPokemon([]);
+        setTotalPokemon(0);
+        setIsLoading(true);
+        setIsRefreshing(false);
+      }
 
       try {
         const offset = (currentPage - 1) * POKEMON_PER_PAGE;
@@ -52,13 +70,32 @@ function App() {
 
         setPokemon(pageData.pokemon);
         setTotalPokemon(pageData.count);
+        setPokemonPageCache(currentPage, pageData);
+        setIsCacheFallback(false);
       } catch (error) {
-        if (error.name !== 'AbortError') {
-          setApiError(error);
+        if (error.name === 'AbortError') {
+          return;
         }
+
+        const fallbackPage = getPokemonPageCache(currentPage, {
+          allowExpired: true,
+        });
+
+        if (fallbackPage) {
+          setPokemon(fallbackPage.pokemon);
+          setTotalPokemon(fallbackPage.count);
+          setIsCacheFallback(true);
+        } else {
+          setPokemon([]);
+          setTotalPokemon(0);
+          setIsCacheFallback(false);
+        }
+
+        setApiError(error);
       } finally {
         if (!controller.signal.aborted) {
           setIsLoading(false);
+          setIsRefreshing(false);
         }
       }
     };
@@ -96,6 +133,8 @@ function App() {
     setApiError(null);
     setIsSearchMode(false);
     setIsLoading(true);
+    setIsRefreshing(false);
+    setIsCacheFallback(false);
     setRetryRequest((request) => request + 1);
   };
 
@@ -120,6 +159,8 @@ function App() {
     setCurrentPage(1);
     setIsLoading(true);
     setApiError(null);
+    setIsRefreshing(false);
+    setIsCacheFallback(false);
 
     try {
       const searchResult = await getPokemonByNameOrId(
@@ -184,6 +225,8 @@ function App() {
         apiError={apiError}
         isSearchMode={isSearchMode}
         searchQuery={searchQuery}
+        isRefreshing={isRefreshing}
+isCacheFallback={isCacheFallback}
         onSearchQueryChange={setSearchQuery}
         onSearch={handleSearch}
         onResetExplorer={handleResetExplorer}

@@ -10,6 +10,8 @@ function Main({
   totalPokemon,
   currentPage,
   isLoading,
+  isRefreshing,
+  isCacheFallback,
   apiError,
   isSearchMode,
   searchQuery,
@@ -31,6 +33,8 @@ function Main({
               totalPokemon={totalPokemon}
               currentPage={currentPage}
               isLoading={isLoading}
+              isRefreshing={isRefreshing}
+              isCacheFallback={isCacheFallback}
               apiError={apiError}
               isSearchMode={isSearchMode}
               searchQuery={searchQuery}
