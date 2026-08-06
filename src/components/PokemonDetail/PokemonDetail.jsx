@@ -1,39 +1,115 @@
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router';
-import { mockPokemon } from '../../utils/mockPokemon.js';
+import ErrorMessage from '../ErrorMessage/ErrorMessage.jsx';
+import Preloader from '../Preloader/Preloader.jsx';
+import { getPokemonByNameOrId } from '../../utils/PokeApi.js';
 import './PokemonDetail.css';
 
-const STAT_NAMES = [
-  'Puntos de salud',
-  'Ataque',
-  'Defensa',
-  'Ataque especial',
-  'Defensa especial',
-  'Velocidad',
-];
+const STAT_LABELS = {
+  hp: 'Puntos de salud',
+  attack: 'Ataque',
+  defense: 'Defensa',
+  'special-attack': 'Ataque especial',
+  'special-defense': 'Defensa especial',
+  speed: 'Velocidad',
+};
+
+const measurementFormatter = new Intl.NumberFormat('es-MX', {
+  maximumFractionDigits: 1,
+});
+
+const formatApiName = (name) => name.replaceAll('-', ' ');
 
 function PokemonDetail() {
   const { id } = useParams();
-  const pokemonId = Number(id);
 
-  const pokemon = mockPokemon.find(
-    (pokemonItem) => pokemonItem.id === pokemonId,
-  );
+  const [pokemon, setPokemon] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [apiError, setApiError] = useState(null);
+  const [isNotFound, setIsNotFound] = useState(false);
+  const [retryRequest, setRetryRequest] = useState(0);
 
-  if (!pokemon) {
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const loadPokemonDetail = async () => {
+      setIsLoading(true);
+      setApiError(null);
+      setIsNotFound(false);
+      setPokemon(null);
+
+      try {
+        const pokemonData = await getPokemonByNameOrId(id, controller.signal);
+
+        if (!controller.signal.aborted) {
+          setPokemon(pokemonData);
+        }
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          return;
+        }
+
+        if (error.status === 404) {
+          setIsNotFound(true);
+          return;
+        }
+
+        setApiError(error);
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadPokemonDetail();
+
+    return () => {
+      controller.abort();
+    };
+  }, [id, retryRequest]);
+
+  const handleRetry = () => {
+    setRetryRequest((request) => request + 1);
+  };
+
+  if (isLoading) {
+    return (
+      <section
+        className="pokemon-detail pokemon-detail_state_loading"
+        aria-label="Cargando información del Pokémon"
+      >
+        <Preloader />
+      </section>
+    );
+  }
+
+  if (apiError) {
+    return (
+      <section
+        className="pokemon-detail pokemon-detail_state_error"
+        aria-label="Error al cargar el Pokémon"
+      >
+        <ErrorMessage onRetry={handleRetry} />
+      </section>
+    );
+  }
+
+  if (isNotFound || !pokemon) {
     return (
       <section
         className="pokemon-detail pokemon-detail_state_not-found"
         aria-labelledby="pokemon-not-found-title"
       >
         <div className="pokemon-detail__not-found">
-          <p className="pokemon-detail__number">Pokémon #{id}</p>
+          <p className="pokemon-detail__number">Consulta: {id}</p>
 
           <h1 className="pokemon-detail__title" id="pokemon-not-found-title">
             Pokémon no encontrado
           </h1>
 
           <p className="pokemon-detail__description">
-            No hay información temporal disponible para este identificador.
+            PokéAPI no encontró información para este nombre o identificador.
           </p>
 
           <Link className="pokemon-detail__back-link" to="/">
@@ -45,6 +121,8 @@ function PokemonDetail() {
   }
 
   const formattedId = String(pokemon.id).padStart(3, '0');
+
+  const formattedAbilities = pokemon.abilities.map(formatApiName).join(', ');
 
   return (
     <section className="pokemon-detail" aria-labelledby="pokemon-detail-title">
@@ -86,19 +164,23 @@ function PokemonDetail() {
               <div className="pokemon-detail__information-item">
                 <dt className="pokemon-detail__term">Altura</dt>
 
-                <dd className="pokemon-detail__value">Pendiente de PokéAPI</dd>
+                <dd className="pokemon-detail__value">
+                  {measurementFormatter.format(pokemon.heightMeters)} m
+                </dd>
               </div>
 
               <div className="pokemon-detail__information-item">
                 <dt className="pokemon-detail__term">Peso</dt>
 
-                <dd className="pokemon-detail__value">Pendiente de PokéAPI</dd>
+                <dd className="pokemon-detail__value">
+                  {measurementFormatter.format(pokemon.weightKilograms)} kg
+                </dd>
               </div>
 
               <div className="pokemon-detail__information-item">
                 <dt className="pokemon-detail__term">Habilidades</dt>
 
-                <dd className="pokemon-detail__value">Pendiente de PokéAPI</dd>
+                <dd className="pokemon-detail__value">{formattedAbilities}</dd>
               </div>
             </dl>
 
@@ -126,12 +208,14 @@ function PokemonDetail() {
           </h2>
 
           <ul className="pokemon-detail__stats-list">
-            {STAT_NAMES.map((statName) => (
-              <li className="pokemon-detail__stat" key={statName}>
-                <span className="pokemon-detail__stat-name">{statName}</span>
+            {pokemon.stats.map((stat) => (
+              <li className="pokemon-detail__stat" key={stat.name}>
+                <span className="pokemon-detail__stat-name">
+                  {STAT_LABELS[stat.name] ?? formatApiName(stat.name)}
+                </span>
 
                 <span className="pokemon-detail__stat-placeholder">
-                  Pendiente
+                  {stat.value}
                 </span>
               </li>
             ))}

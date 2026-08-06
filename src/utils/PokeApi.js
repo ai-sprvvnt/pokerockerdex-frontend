@@ -33,6 +33,19 @@ function transformPokemon(pokemonData) {
   };
 }
 
+function transformPokemonDetail(pokemonData) {
+  return {
+    ...transformPokemon(pokemonData),
+    heightMeters: pokemonData.height / 10,
+    weightKilograms: pokemonData.weight / 10,
+    abilities: pokemonData.abilities.map(({ ability }) => ability.name),
+    stats: pokemonData.stats.map(({ base_stat: value, stat }) => ({
+      name: stat.name,
+      value,
+    })),
+  };
+}
+
 async function getPokemonPage({
   limit = DEFAULT_PAGE_LIMIT,
   offset = 0,
@@ -78,7 +91,7 @@ async function getPokemonByNameOrId(query, signal) {
 
   const pokemonData = await checkResponse(response);
 
-  return transformPokemon(pokemonData);
+  return transformPokemonDetail(pokemonData);
 }
 
 export {
