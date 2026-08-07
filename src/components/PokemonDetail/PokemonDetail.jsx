@@ -4,6 +4,7 @@ import ErrorMessage from '../ErrorMessage/ErrorMessage.jsx';
 import Preloader from '../Preloader/Preloader.jsx';
 import { getPokemonByNameOrId } from '../../utils/PokeApi.js';
 import './PokemonDetail.css';
+import PokemonImage from '../PokemonImage/PokemonImage.jsx';
 
 const STAT_LABELS = {
   hp: 'Puntos de salud',
@@ -135,7 +136,7 @@ function PokemonDetail() {
           <div className="pokemon-detail__visual">
             <p className="pokemon-detail__number">#{formattedId}</p>
 
-            <img
+            <PokemonImage
               className="pokemon-detail__image"
               src={pokemon.image}
               alt={`Ilustración de ${pokemon.name}`}
