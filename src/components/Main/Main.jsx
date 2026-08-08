@@ -15,12 +15,16 @@ function Main({
   apiError,
   isSearchMode,
   searchQuery,
+  isLoadingMore,
+  loadMoreError,
+  canShowMore,
   onSearchQueryChange,
   onSearch,
   onResetExplorer,
   onPreviousPage,
   onNextPage,
   onRetry,
+  onShowMore,
 }) {
   return (
     <main className="main">
@@ -38,12 +42,16 @@ function Main({
               apiError={apiError}
               isSearchMode={isSearchMode}
               searchQuery={searchQuery}
+              isLoadingMore={isLoadingMore}
+              loadMoreError={loadMoreError}
+              canShowMore={canShowMore}
               onSearchQueryChange={onSearchQueryChange}
               onSearch={onSearch}
               onResetExplorer={onResetExplorer}
               onPreviousPage={onPreviousPage}
               onNextPage={onNextPage}
               onRetry={onRetry}
+              onShowMore={onShowMore}
             />
           }
         />

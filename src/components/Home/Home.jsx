@@ -17,12 +17,16 @@ function Home({
   apiError,
   isSearchMode,
   searchQuery,
+  isLoadingMore,
+  loadMoreError,
+  canShowMore,
   onSearchQueryChange,
   onSearch,
   onResetExplorer,
   onPreviousPage,
   onNextPage,
   onRetry,
+  onShowMore,
 }) {
   const totalPages = Math.ceil(totalPokemon / POKEMON_PER_PAGE);
 
@@ -101,7 +105,42 @@ function Home({
                 </div>
               )}
 
+              {isSearchMode && (
+                <div className="pokemon-explorer__results-header">
+                  <p className="pokemon-explorer__results-title">
+                    Resultados de búsqueda
+                  </p>
+
+                  <p className="pokemon-explorer__results-summary">
+                    {totalPokemon === 1
+                      ? `1 coincidencia para "${searchQuery}"`
+                      : `${totalPokemon} coincidencias para "${searchQuery}"`}
+                  </p>
+                </div>
+              )}
+
               <PokemonCardList pokemon={pokemon} />
+
+              {loadMoreError ? (
+                <div className="pokemon-explorer__load-more-error">
+                  <ErrorMessage
+                    title="No pudimos cargar más resultados"
+                    description="Ocurrió un problema al solicitar los siguientes Pokémon. Puedes intentarlo nuevamente."
+                    onRetry={onShowMore}
+                  />
+                </div>
+              ) : (
+                canShowMore && (
+                  <button
+                    className="pokemon-explorer__load-more"
+                    type="button"
+                    onClick={onShowMore}
+                    disabled={isLoadingMore}
+                  >
+                    {isLoadingMore ? 'Cargando...' : 'Mostrar más'}
+                  </button>
+                )
+              )}
 
               {!isSearchMode && (
                 <Pagination

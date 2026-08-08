@@ -139,3 +139,55 @@
 .pokemon-explorer__cache-fallback {
   margin-top: 32px;
 }
+.pokemon-explorer__results-header {
+  margin: 32px 0 24px;
+}
+
+.pokemon-explorer__results-title {
+  margin: 0;
+  color: var(--color-heading);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.pokemon-explorer__results-summary {
+  margin: 8px 0 0;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.pokemon-explorer__load-more {
+  min-height: 48px;
+  margin: 32px auto 0;
+  padding: 0 32px;
+  display: block;
+  border: 1px solid var(--color-primary);
+  border-radius: 8px;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.pokemon-explorer__load-more:hover:not(:disabled) {
+  transform: translateY(-2px);
+  opacity: 0.9;
+}
+
+.pokemon-explorer__load-more:focus-visible {
+  outline: 3px solid rgba(122, 40, 168, 0.3);
+  outline-offset: 3px;
+}
+
+.pokemon-explorer__load-more:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.pokemon-explorer__load-more-error {
+  margin-top: 32px;
+}

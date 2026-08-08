@@ -73,6 +73,44 @@ async function getPokemonPage({
   };
 }
 
+async function searchPokemonByName(query, signal) {
+  const normalizedQuery = String(query).trim().toLowerCase();
+
+  if (!normalizedQuery) {
+    const error = new Error('Escribe el nombre o número de un Pokémon.');
+
+    error.status = 400;
+
+    throw error;
+  }
+
+  const countResponse = await fetch(
+    `${POKE_API_BASE_URL}/pokemon?limit=1&offset=0`,
+    { signal },
+  );
+
+  const { count } = await checkResponse(countResponse);
+
+  const indexResponse = await fetch(
+    `${POKE_API_BASE_URL}/pokemon?limit=${count}&offset=0`,
+    { signal },
+  );
+
+  const pokemonIndex = await checkResponse(indexResponse);
+
+  return pokemonIndex.results.filter(({ name }) =>
+    name.includes(normalizedQuery),
+  );
+}
+
+async function getPokemonByUrls(pokemonReferences, signal) {
+  const pokemonDetails = await Promise.all(
+    pokemonReferences.map(({ url }) => getPokemonByUrl(url, signal)),
+  );
+
+  return pokemonDetails.map(transformPokemon);
+}
+
 async function getPokemonByNameOrId(query, signal) {
   const normalizedQuery = String(query).trim().toLowerCase();
 
@@ -98,5 +136,7 @@ export {
   POKE_API_BASE_URL,
   getPokemonPage,
   getPokemonByNameOrId,
+  searchPokemonByName,
+  getPokemonByUrls,
   transformPokemon,
 };

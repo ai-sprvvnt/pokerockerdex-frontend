@@ -3,9 +3,17 @@ import { useLocation } from 'react-router';
 import Header from '../Header/Header.jsx';
 import Main from '../Main/Main.jsx';
 import Footer from '../Footer/Footer.jsx';
-import { getPokemonByNameOrId, getPokemonPage } from '../../utils/PokeApi.js';
+import {
+  getPokemonByNameOrId,
+  getPokemonByUrls,
+  getPokemonPage,
+  searchPokemonByName,
+} from '../../utils/PokeApi.js';
 import { getPokemonPageCache, setPokemonPageCache } from '../../utils/cache.js';
-import { POKEMON_PER_PAGE } from '../../utils/constants.js';
+import {
+  POKEMON_PER_PAGE,
+  SEARCH_RESULTS_BATCH_SIZE,
+} from '../../utils/constants.js';
 import './App.css';
 
 function App() {
@@ -20,6 +28,10 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isCacheFallback, setIsCacheFallback] = useState(false);
+  const [searchMatches, setSearchMatches] = useState([]);
+  const [visibleSearchCount, setVisibleSearchCount] = useState(0);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [loadMoreError, setLoadMoreError] = useState(null);
 
   const pageControllerRef = useRef(null);
   const searchControllerRef = useRef(null);
@@ -129,6 +141,10 @@ function App() {
     setActiveSearchQuery('');
     setPokemon([]);
     setTotalPokemon(0);
+    setSearchMatches([]);
+    setVisibleSearchCount(0);
+    setIsLoadingMore(false);
+    setLoadMoreError(null);
     setCurrentPage(1);
     setApiError(null);
     setIsSearchMode(false);
@@ -156,14 +172,39 @@ function App() {
     setSearchQuery(normalizedQuery);
     setIsSearchMode(true);
     setActiveSearchQuery(normalizedQuery);
+    setPokemon([]);
+    setTotalPokemon(0);
+    setSearchMatches([]);
+    setVisibleSearchCount(0);
     setCurrentPage(1);
     setIsLoading(true);
+    setIsLoadingMore(false);
     setApiError(null);
+    setLoadMoreError(null);
     setIsRefreshing(false);
     setIsCacheFallback(false);
 
     try {
-      const searchResult = await getPokemonByNameOrId(
+      const isNumericQuery = /^\d+$/.test(normalizedQuery);
+
+      if (isNumericQuery) {
+        const searchResult = await getPokemonByNameOrId(
+          normalizedQuery,
+          controller.signal,
+        );
+
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        setPokemon([searchResult]);
+        setTotalPokemon(1);
+        setVisibleSearchCount(1);
+
+        return;
+      }
+
+      const matches = await searchPokemonByName(
         normalizedQuery,
         controller.signal,
       );
@@ -172,8 +213,26 @@ function App() {
         return;
       }
 
-      setPokemon([searchResult]);
-      setTotalPokemon(1);
+      setSearchMatches(matches);
+      setTotalPokemon(matches.length);
+
+      if (matches.length === 0) {
+        return;
+      }
+
+      const initialReferences = matches.slice(0, SEARCH_RESULTS_BATCH_SIZE);
+
+      const initialPokemon = await getPokemonByUrls(
+        initialReferences,
+        controller.signal,
+      );
+
+      if (controller.signal.aborted) {
+        return;
+      }
+
+      setPokemon(initialPokemon);
+      setVisibleSearchCount(initialPokemon.length);
     } catch (error) {
       if (error.name === 'AbortError') {
         return;
@@ -182,6 +241,9 @@ function App() {
       if (error.status === 404) {
         setPokemon([]);
         setTotalPokemon(0);
+        setSearchMatches([]);
+        setVisibleSearchCount(0);
+
         return;
       }
 
@@ -190,6 +252,58 @@ function App() {
       if (searchControllerRef.current === controller) {
         searchControllerRef.current = null;
         setIsLoading(false);
+      }
+    }
+  };
+
+  const handleShowMore = async () => {
+    if (
+      !isSearchMode ||
+      isLoadingMore ||
+      visibleSearchCount >= searchMatches.length
+    ) {
+      return;
+    }
+
+    searchControllerRef.current?.abort();
+
+    const controller = new AbortController();
+
+    searchControllerRef.current = controller;
+
+    setIsLoadingMore(true);
+    setLoadMoreError(null);
+
+    try {
+      const nextReferences = searchMatches.slice(
+        visibleSearchCount,
+        visibleSearchCount + SEARCH_RESULTS_BATCH_SIZE,
+      );
+
+      const nextPokemon = await getPokemonByUrls(
+        nextReferences,
+        controller.signal,
+      );
+
+      if (controller.signal.aborted) {
+        return;
+      }
+
+      setPokemon((currentPokemon) => [...currentPokemon, ...nextPokemon]);
+
+      setVisibleSearchCount(
+        (currentCount) => currentCount + nextPokemon.length,
+      );
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        return;
+      }
+
+      setLoadMoreError(error);
+    } finally {
+      if (searchControllerRef.current === controller) {
+        searchControllerRef.current = null;
+        setIsLoadingMore(false);
       }
     }
   };
@@ -213,6 +327,8 @@ function App() {
     setRetryRequest((request) => request + 1);
   };
 
+  const canShowMore = isSearchMode && visibleSearchCount < searchMatches.length;
+
   return (
     <div className="page">
       <Header onResetExplorer={handleResetExplorer} />
@@ -226,13 +342,17 @@ function App() {
         isSearchMode={isSearchMode}
         searchQuery={searchQuery}
         isRefreshing={isRefreshing}
-isCacheFallback={isCacheFallback}
+        isCacheFallback={isCacheFallback}
         onSearchQueryChange={setSearchQuery}
         onSearch={handleSearch}
         onResetExplorer={handleResetExplorer}
         onPreviousPage={handlePreviousPage}
         onNextPage={handleNextPage}
         onRetry={handleRetry}
+        isLoadingMore={isLoadingMore}
+        loadMoreError={loadMoreError}
+        canShowMore={canShowMore}
+        onShowMore={handleShowMore}
       />
 
       <Footer />
