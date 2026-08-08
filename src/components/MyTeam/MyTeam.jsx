@@ -3,17 +3,11 @@ import EmptyTeam from '../EmptyTeam/EmptyTeam.jsx';
 import TeamPokemonCard from '../TeamPokemonCard/TeamPokemonCard.jsx';
 import TeamSlot from '../TeamSlot/TeamSlot.jsx';
 import { MAX_TEAM_SIZE } from '../../utils/constants.js';
-import { mockPokemon } from '../../utils/mockPokemon.js';
+import { initialTeamFixture } from '../../utils/teamFixture.js';
 import './MyTeam.css';
 
-const INITIAL_TEAM_IDS = [1, 4, 7];
-
-const initialTeam = mockPokemon.filter((pokemon) =>
-  INITIAL_TEAM_IDS.includes(pokemon.id),
-);
-
 function MyTeam() {
-  const [team, setTeam] = useState(initialTeam);
+  const [team, setTeam] = useState(initialTeamFixture);
 
   const availableSlots = MAX_TEAM_SIZE - team.length;
 

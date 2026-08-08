@@ -2,15 +2,15 @@ import { Link } from 'react-router';
 import Navigation from '../Navigation/Navigation.jsx';
 import './Header.css';
 
-function Header() {
+function Header({ onResetExplorer }) {
   return (
     <header className="header">
       <div className="header__container">
-        <Link className="header__logo" to="/">
+        <Link className="header__logo" to="/" onClick={onResetExplorer}>
           PokeRockerDex
         </Link>
 
-        <Navigation />
+        <Navigation onResetExplorer={onResetExplorer} />
       </div>
     </header>
   );

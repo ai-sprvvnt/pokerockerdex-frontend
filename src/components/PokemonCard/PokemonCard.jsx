@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 import './PokemonCard.css';
+import PokemonImage from '../PokemonImage/PokemonImage.jsx';
 
 function PokemonCard({ pokemon }) {
   const formattedId = String(pokemon.id).padStart(3, '0');
@@ -11,7 +12,7 @@ function PokemonCard({ pokemon }) {
     >
       <Link className="pokemon-card__link" to={`/pokemon/${pokemon.id}`}>
         <div className="pokemon-card__image-container">
-          <img
+          <PokemonImage
             className="pokemon-card__image"
             src={pokemon.image}
             alt={`Ilustración de ${pokemon.name}`}
