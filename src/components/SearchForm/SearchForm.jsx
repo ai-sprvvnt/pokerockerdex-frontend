@@ -30,7 +30,7 @@ function SearchForm({
     const normalizedQuery = query.trim();
 
     if (!normalizedQuery) {
-      setErrorMessage('Escribe el nombre o número de un Pokémon.');
+      setErrorMessage('Por favor, introduzca una palabra clave');
       return;
     }
 

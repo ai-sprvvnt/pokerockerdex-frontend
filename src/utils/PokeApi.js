@@ -77,7 +77,7 @@ async function searchPokemonByName(query, signal) {
   const normalizedQuery = String(query).trim().toLowerCase();
 
   if (!normalizedQuery) {
-    const error = new Error('Escribe el nombre o número de un Pokémon.');
+    const error = new Error('Por favor, introduzca una palabra clave');
 
     error.status = 400;
 
@@ -115,7 +115,7 @@ async function getPokemonByNameOrId(query, signal) {
   const normalizedQuery = String(query).trim().toLowerCase();
 
   if (!normalizedQuery) {
-    const error = new Error('Escribe el nombre o número de un Pokémon.');
+    const error = new Error('Por favor, introduzca una palabra clave');
 
     error.status = 400;
 
