@@ -9,7 +9,13 @@ import {
   getPokemonPage,
   searchPokemonByName,
 } from '../../utils/PokeApi.js';
-import { getPokemonPageCache, setPokemonPageCache } from '../../utils/cache.js';
+import {
+  clearLastSearchCache,
+  getLastSearchCache,
+  getPokemonPageCache,
+  setLastSearchCache,
+  setPokemonPageCache,
+} from '../../utils/cache.js';
 import {
   POKEMON_PER_PAGE,
   SEARCH_RESULTS_BATCH_SIZE,
@@ -17,19 +23,46 @@ import {
 import './App.css';
 
 function App() {
-  const [pokemon, setPokemon] = useState([]);
-  const [totalPokemon, setTotalPokemon] = useState(0);
+  const [initialLastSearch] = useState(() => getLastSearchCache());
+  const [pokemon, setPokemon] = useState(
+    () => initialLastSearch?.results ?? [],
+  );
+
+  const [totalPokemon, setTotalPokemon] = useState(
+    () => initialLastSearch?.totalPokemon ?? 0,
+  );
+
   const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
+
+  const [isLoading, setIsLoading] = useState(() => !initialLastSearch);
+
   const [apiError, setApiError] = useState(null);
-  const [isSearchMode, setIsSearchMode] = useState(false);
-  const [activeSearchQuery, setActiveSearchQuery] = useState('');
+
+  const [isSearchMode, setIsSearchMode] = useState(() =>
+    Boolean(initialLastSearch),
+  );
+
+  const [activeSearchQuery, setActiveSearchQuery] = useState(
+    () => initialLastSearch?.query ?? '',
+  );
+
   const [retryRequest, setRetryRequest] = useState(0);
-  const [searchQuery, setSearchQuery] = useState('');
+
+  const [searchQuery, setSearchQuery] = useState(
+    () => initialLastSearch?.query ?? '',
+  );
+
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isCacheFallback, setIsCacheFallback] = useState(false);
-  const [searchMatches, setSearchMatches] = useState([]);
-  const [visibleSearchCount, setVisibleSearchCount] = useState(0);
+
+  const [searchMatches, setSearchMatches] = useState(
+    () => initialLastSearch?.searchMatches ?? [],
+  );
+
+  const [visibleSearchCount, setVisibleSearchCount] = useState(
+    () => initialLastSearch?.visibleCount ?? 0,
+  );
+
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [loadMoreError, setLoadMoreError] = useState(null);
 
@@ -137,6 +170,8 @@ function App() {
     searchControllerRef.current?.abort();
     searchControllerRef.current = null;
 
+    clearLastSearchCache();
+
     setSearchQuery('');
     setActiveSearchQuery('');
     setPokemon([]);
@@ -161,6 +196,8 @@ function App() {
       handleResetExplorer();
       return;
     }
+
+    clearLastSearchCache();
 
     pageControllerRef.current?.abort();
     searchControllerRef.current?.abort();
@@ -197,9 +234,20 @@ function App() {
           return;
         }
 
-        setPokemon([searchResult]);
+        const numericResults = [searchResult];
+
+        setPokemon(numericResults);
         setTotalPokemon(1);
+        setSearchMatches([]);
         setVisibleSearchCount(1);
+
+        setLastSearchCache({
+          query: normalizedQuery,
+          results: numericResults,
+          searchMatches: [],
+          visibleCount: 1,
+          totalPokemon: 1,
+        });
 
         return;
       }
@@ -217,6 +265,14 @@ function App() {
       setTotalPokemon(matches.length);
 
       if (matches.length === 0) {
+        setLastSearchCache({
+          query: normalizedQuery,
+          results: [],
+          searchMatches: [],
+          visibleCount: 0,
+          totalPokemon: 0,
+        });
+
         return;
       }
 
@@ -233,6 +289,14 @@ function App() {
 
       setPokemon(initialPokemon);
       setVisibleSearchCount(initialPokemon.length);
+
+      setLastSearchCache({
+        query: normalizedQuery,
+        results: initialPokemon,
+        searchMatches: matches,
+        visibleCount: initialPokemon.length,
+        totalPokemon: matches.length,
+      });
     } catch (error) {
       if (error.name === 'AbortError') {
         return;
@@ -289,11 +353,20 @@ function App() {
         return;
       }
 
-      setPokemon((currentPokemon) => [...currentPokemon, ...nextPokemon]);
+      const updatedPokemon = [...pokemon, ...nextPokemon];
 
-      setVisibleSearchCount(
-        (currentCount) => currentCount + nextPokemon.length,
-      );
+      const updatedVisibleCount = visibleSearchCount + nextPokemon.length;
+
+      setPokemon(updatedPokemon);
+      setVisibleSearchCount(updatedVisibleCount);
+
+      setLastSearchCache({
+        query: activeSearchQuery,
+        results: updatedPokemon,
+        searchMatches,
+        visibleCount: updatedVisibleCount,
+        totalPokemon: searchMatches.length,
+      });
     } catch (error) {
       if (error.name === 'AbortError') {
         return;

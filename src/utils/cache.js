@@ -1,4 +1,5 @@
 import {
+  LAST_SEARCH_CACHE_KEY,
   POKEMON_PAGE_CACHE_PREFIX,
   POKEMON_PAGE_CACHE_TTL,
 } from './constants.js';
@@ -22,6 +23,51 @@ const isValidCacheEntry = (cacheEntry) =>
   cacheEntry.count >= 0 &&
   Array.isArray(cacheEntry.pokemon) &&
   cacheEntry.pokemon.every(isValidPokemon);
+
+const isValidSearchReference = (reference) =>
+  reference !== null &&
+  typeof reference === 'object' &&
+  typeof reference.name === 'string' &&
+  reference.name.length > 0 &&
+  typeof reference.url === 'string' &&
+  reference.url.length > 0;
+
+const isValidLastSearchEntry = (cacheEntry) => {
+  if (
+    cacheEntry === null ||
+    typeof cacheEntry !== 'object' ||
+    !Number.isFinite(cacheEntry.timestamp) ||
+    typeof cacheEntry.query !== 'string' ||
+    cacheEntry.query.length === 0 ||
+    !Array.isArray(cacheEntry.results) ||
+    !cacheEntry.results.every(isValidPokemon) ||
+    !Array.isArray(cacheEntry.searchMatches) ||
+    !cacheEntry.searchMatches.every(isValidSearchReference) ||
+    !Number.isInteger(cacheEntry.visibleCount) ||
+    cacheEntry.visibleCount < 0 ||
+    !Number.isInteger(cacheEntry.totalPokemon) ||
+    cacheEntry.totalPokemon < 0
+  ) {
+    return false;
+  }
+
+  if (cacheEntry.visibleCount !== cacheEntry.results.length) {
+    return false;
+  }
+
+  if (cacheEntry.totalPokemon < cacheEntry.results.length) {
+    return false;
+  }
+
+  if (cacheEntry.searchMatches.length > 0) {
+    return (
+      cacheEntry.searchMatches.length === cacheEntry.totalPokemon &&
+      cacheEntry.visibleCount <= cacheEntry.searchMatches.length
+    );
+  }
+
+  return cacheEntry.totalPokemon === cacheEntry.results.length;
+};
 
 function getPokemonPageCache(page, { allowExpired = false } = {}) {
   const cacheKey = getPokemonPageCacheKey(page);
@@ -80,4 +126,70 @@ function setPokemonPageCache(page, { count, pokemon }) {
   }
 }
 
-export { getPokemonPageCache, getPokemonPageCacheKey, setPokemonPageCache };
+function getLastSearchCache() {
+  try {
+    const storedValue = localStorage.getItem(LAST_SEARCH_CACHE_KEY);
+
+    if (!storedValue) {
+      return null;
+    }
+
+    const cacheEntry = JSON.parse(storedValue);
+
+    if (!isValidLastSearchEntry(cacheEntry)) {
+      localStorage.removeItem(LAST_SEARCH_CACHE_KEY);
+      return null;
+    }
+
+    return cacheEntry;
+  } catch {
+    localStorage.removeItem(LAST_SEARCH_CACHE_KEY);
+    return null;
+  }
+}
+
+function setLastSearchCache({
+  query,
+  results,
+  searchMatches,
+  visibleCount,
+  totalPokemon,
+}) {
+  const cacheEntry = {
+    timestamp: Date.now(),
+    query,
+    results,
+    searchMatches,
+    visibleCount,
+    totalPokemon,
+  };
+
+  if (!isValidLastSearchEntry(cacheEntry)) {
+    return false;
+  }
+
+  try {
+    localStorage.setItem(LAST_SEARCH_CACHE_KEY, JSON.stringify(cacheEntry));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function clearLastSearchCache() {
+  try {
+    localStorage.removeItem(LAST_SEARCH_CACHE_KEY);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export {
+  clearLastSearchCache,
+  getLastSearchCache,
+  getPokemonPageCache,
+  getPokemonPageCacheKey,
+  setLastSearchCache,
+  setPokemonPageCache,
+};
