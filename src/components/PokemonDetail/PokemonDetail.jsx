@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import ErrorMessage from '../ErrorMessage/ErrorMessage.jsx';
 import Preloader from '../Preloader/Preloader.jsx';
 import { getPokemonByNameOrId } from '../../utils/PokeApi.js';
+import { addPokemonToTeam } from '../../utils/MainApi.js';
 import './PokemonDetail.css';
 import PokemonImage from '../PokemonImage/PokemonImage.jsx';
 
@@ -30,14 +31,29 @@ function PokemonDetail() {
   const [isNotFound, setIsNotFound] = useState(false);
   const [retryRequest, setRetryRequest] = useState(0);
 
+  const [isAddingToTeam, setIsAddingToTeam] = useState(false);
+  const [isAddedToTeam, setIsAddedToTeam] = useState(false);
+  const [teamMessage, setTeamMessage] = useState('');
+  const [teamMessageType, setTeamMessageType] = useState('');
+
+  const teamControllerRef = useRef(null);
+
   useEffect(() => {
     const controller = new AbortController();
 
     const loadPokemonDetail = async () => {
+      teamControllerRef.current?.abort();
+      teamControllerRef.current = null;
+
       setIsLoading(true);
       setApiError(null);
       setIsNotFound(false);
       setPokemon(null);
+
+      setIsAddingToTeam(false);
+      setIsAddedToTeam(false);
+      setTeamMessage('');
+      setTeamMessageType('');
 
       try {
         const pokemonData = await getPokemonByNameOrId(id, controller.signal);
@@ -67,11 +83,56 @@ function PokemonDetail() {
 
     return () => {
       controller.abort();
+      teamControllerRef.current?.abort();
+      teamControllerRef.current = null;
     };
   }, [id, retryRequest]);
 
   const handleRetry = () => {
     setRetryRequest((request) => request + 1);
+  };
+
+  const handleAddToTeam = async () => {
+    if (!pokemon || isAddingToTeam || isAddedToTeam) {
+      return;
+    }
+
+    teamControllerRef.current?.abort();
+
+    const controller = new AbortController();
+
+    teamControllerRef.current = controller;
+
+    setIsAddingToTeam(true);
+    setTeamMessage('');
+    setTeamMessageType('');
+
+    try {
+      const teamData = await addPokemonToTeam(pokemon, controller.signal);
+
+      if (controller.signal.aborted) {
+        return;
+      }
+
+      setIsAddedToTeam(true);
+      setTeamMessage(
+        `${teamData.pokemon.name} se agregó a tu equipo. ` +
+          `Equipo: ${teamData.teamSize}/${teamData.maxTeamSize}.`,
+      );
+      setTeamMessageType('success');
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        return;
+      }
+
+      setTeamMessage(error.message);
+      setTeamMessageType('error');
+    } finally {
+      if (teamControllerRef.current === controller) {
+        teamControllerRef.current = null;
+        setIsAddingToTeam(false);
+      }
+    }
   };
 
   if (isLoading) {
@@ -188,14 +249,26 @@ function PokemonDetail() {
             <button
               className="pokemon-detail__team-button"
               type="button"
-              disabled
+              onClick={handleAddToTeam}
+              disabled={isAddingToTeam || isAddedToTeam}
             >
-              Agregar a mi equipo
+              {isAddingToTeam
+                ? 'Agregando...'
+                : isAddedToTeam
+                  ? 'Agregado al equipo'
+                  : 'Agregar a mi equipo'}
             </button>
 
-            <p className="pokemon-detail__team-message">
-              Esta función estará disponible después de implementar el registro
-              y el inicio de sesión.
+            <p
+              className={`pokemon-detail__team-message${
+                teamMessageType
+                  ? ` pokemon-detail__team-message_type_${teamMessageType}`
+                  : ''
+              }`}
+              aria-live="polite"
+            >
+              {teamMessage ||
+                'El equipo se guarda temporalmente mientras el servidor está activo.'}
             </p>
           </div>
         </article>

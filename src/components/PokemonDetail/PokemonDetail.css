@@ -147,6 +147,20 @@
   background-color: var(--color-primary);
   color: #ffffff;
   font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.pokemon-detail__team-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  opacity: 0.9;
+}
+
+.pokemon-detail__team-button:focus-visible {
+  outline: 3px solid rgba(122, 40, 168, 0.3);
+  outline-offset: 3px;
 }
 
 .pokemon-detail__team-button:disabled {
@@ -160,6 +174,14 @@
   font-size: 13px;
   line-height: 1.5;
   text-align: center;
+}
+
+.pokemon-detail__team-message_type_success {
+  color: #2e7d32;
+}
+
+.pokemon-detail__team-message_type_error {
+  color: #b3261e;
 }
 
 .pokemon-detail__stats {
