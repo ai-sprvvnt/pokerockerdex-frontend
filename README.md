@@ -2,48 +2,68 @@
 
 Frontend de **PokeRockerDex**, una aplicación full stack desarrollada como Proyecto Final de Desarrollo Web de TripleTen.
 
-La aplicación permite explorar Pokémon mediante PokéAPI, realizar búsquedas por nombre o número y consultar información detallada. En etapas posteriores incorporará autenticación y persistencia de un equipo personal mediante una API propia.
+La aplicación permite explorar Pokémon mediante PokéAPI, realizar búsquedas por nombre o número, consultar información detallada y formar temporalmente un equipo personal de hasta seis Pokémon mediante la API propia de PokeRockerDex.
 
 ## Estado del proyecto
 
-La interfaz base de React y la integración con PokéAPI están implementadas.
+La interfaz de React, la integración con PokéAPI y la integración mínima con la API propia están implementadas.
 
-Actualmente el proyecto se encuentra finalizando la **Etapa 1.2 — Integración con API**.
+Actualmente el proyecto se encuentra finalizando las correcciones de la **Etapa 1.2 — Integración con API** después de la primera revisión de TripleTen.
 
 ### Implementado
 
 - Exploración de Pokémon reales mediante PokéAPI.
-- 20 Pokémon por página.
+- 20 Pokémon por página en el modo de exploración.
 - Paginación con controles Anterior y Siguiente.
-- Búsqueda por nombre o número.
+- Búsqueda por nombre, coincidencia parcial o número.
+- Bloque explícito de resultados de búsqueda.
+- Tres resultados iniciales en búsquedas con múltiples coincidencias.
+- Botón **Mostrar más** que añade hasta tres resultados por acción.
+- Ocultamiento automático de **Mostrar más** al finalizar los resultados.
+- Restauración de la última búsqueda mediante `localStorage`.
 - Detalle individual de Pokémon.
 - Imagen, tipos, altura, peso, habilidades y estadísticas base.
 - Estados de carga mediante preloader.
 - Manejo diferenciado de resultados inexistentes y errores de red.
 - Botón de reintento.
 - Cancelación de solicitudes mediante `AbortController`.
-- Caché de páginas en `localStorage`.
+- Caché de páginas de exploración en `localStorage`.
 - TTL de caché de 24 horas.
 - Validación y eliminación de entradas de caché corruptas.
 - Uso de caché expirada como contingencia cuando PokéAPI no responde.
-- Actualización desde la red cuando existen datos válidos almacenados.
 - Fallback visual cuando una imagen Pokémon no puede cargarse.
+- Solicitud POST asíncrona real hacia la API propia de PokeRockerDex.
+- Agregado de Pokémon al equipo desde la vista de detalle.
+- Prevención de Pokémon duplicados en el backend.
+- Límite máximo de seis integrantes.
+- Consulta del equipo mediante `GET /teams`.
+- Vista `/my-team` alimentada por la API propia.
+- Manejo de error y reintento al consultar el equipo.
 - Interfaz responsiva desde 320 px.
 - Página 404 para rutas inexistentes.
-- Vista temporal de equipo personal.
 
 ## Equipo personal
 
-La ruta `/my-team` funciona actualmente como una **demostración local de interfaz**.
+La ruta `/my-team` consume actualmente la API propia de PokeRockerDex.
 
-Utiliza un fixture temporal con Pokémon de ejemplo para probar:
+Desde la vista de detalle de un Pokémon es posible utilizar **Agregar a mi equipo**, lo que realiza una solicitud:
 
-- un equipo de hasta seis integrantes;
-- posiciones disponibles;
-- eliminación local de integrantes;
-- interfaz de tarjetas del equipo.
+`POST /teams/pokemon`
 
-La autenticación, protección de la ruta y persistencia real del equipo se implementarán en etapas posteriores.
+El equipo puede consultarse mediante:
+
+`GET /teams`
+
+Durante esta etapa el equipo se mantiene temporalmente en memoria dentro del servidor.
+
+Reglas implementadas:
+
+- máximo de seis Pokémon;
+- no se permiten integrantes duplicados;
+- los errores HTTP del backend se muestran en la interfaz;
+- `/my-team` refleja los datos recibidos desde la API propia.
+
+La persistencia mediante MongoDB, autenticación, usuarios y eliminación definitiva de integrantes pertenecen a etapas posteriores.
 
 ## Funcionalidades pendientes
 
@@ -53,30 +73,27 @@ Las siguientes funcionalidades pertenecen a etapas posteriores del proyecto:
 - inicio de sesión;
 - autenticación mediante JWT;
 - protección de `/my-team`;
-- API propia de PokeRockerDex;
-- persistencia del equipo;
-- agregar Pokémon al equipo desde la exploración o detalle;
-- impedir duplicados mediante la API propia;
-- despliegue final del frontend y backend.
+- persistencia del equipo mediante base de datos;
+- asociación de equipos con usuarios;
+- eliminación de integrantes mediante la API propia;
+- despliegue final coordinado del frontend y backend.
 
 ## Rutas
 
-| Ruta | Estado | Descripción |
-|---|---|---|
-| `/` | Pública | Exploración, búsqueda y paginación |
-| `/pokemon/:id` | Pública | Información detallada de un Pokémon |
-| `/my-team` | Temporalmente pública | Demostración local del equipo personal |
-| `*` | Pública | Página 404 |
+| Ruta           | Estado                | Descripción                                         |
+| -------------- | --------------------- | --------------------------------------------------- |
+| `/`            | Pública               | Exploración paginada y búsqueda de Pokémon          |
+| `/pokemon/:id` | Pública               | Información detallada y agregado temporal al equipo |
+| `/my-team`     | Temporalmente pública | Equipo obtenido desde la API propia                 |
+| `*`            | Pública               | Página 404                                          |
 
 ## PokéAPI
 
 PokeRockerDex utiliza [PokéAPI](https://pokeapi.co/) como API externa para obtener información de los Pokémon.
 
-Las solicitudes se realizan mediante `fetch()` desde un cliente separado en:
+Las solicitudes se realizan mediante `fetch()` desde:
 
-```text
-src/utils/PokeApi.js
-```
+`src/utils/PokeApi.js`
 
 El cliente:
 
@@ -85,15 +102,30 @@ El cliente:
 - diferencia errores HTTP;
 - permite cancelación mediante `AbortSignal`.
 
+## API propia de PokeRockerDex
+
+Además de PokéAPI, el frontend utiliza un backend propio desarrollado con Node.js y Express.
+
+El cliente se encuentra en:
+
+`src/utils/MainApi.js`
+
+Actualmente utiliza:
+
+- `GET /teams` para consultar el equipo;
+- `POST /teams/pokemon` para agregar un Pokémon.
+
+El backend valida los datos recibidos, impide duplicados y limita el equipo a seis integrantes.
+
+Durante la Etapa 1.2 los datos se almacenan temporalmente en memoria. La persistencia definitiva se implementará posteriormente mediante base de datos.
+
 ## Caché y resiliencia
 
 Las páginas de exploración se almacenan temporalmente en `localStorage` con un TTL de 24 horas.
 
 Prefijo utilizado:
 
-```text
-pokerockerdex:pokemon-page:
-```
+`pokerockerdex:pokemon-page:`
 
 La aplicación:
 
@@ -104,7 +136,11 @@ La aplicación:
 - permite reintentar una solicitud;
 - muestra un fallback visual cuando una imagen no puede cargarse.
 
-La caché almacena datos y URLs de imágenes, no los archivos de imagen.
+La última búsqueda se almacena por separado utilizando:
+
+`pokerockerdex:last-search`
+
+Se conservan la consulta, los resultados necesarios y la cantidad actualmente visible para restaurar el estado de búsqueda después de recargar la aplicación.
 
 ## Tecnologías
 
@@ -194,9 +230,9 @@ src/
 ├── images/
 ├── utils/
 │   ├── PokeApi.js
-│   ├── cache.js
+│   ├── MainApi.js
 │   ├── constants.js
-│   └── teamFixture.js
+│   └── cache.js
 ├── vendor/
 ├── index.css
 └── main.jsx
@@ -240,19 +276,45 @@ También se han probado:
 - conexión 3G simulada;
 - navegación entre rutas;
 - página 404;
-- comportamiento responsivo.
+- comportamiento responsivo;
+- búsqueda con múltiples coincidencias;
+- patrón Mostrar más 3 + 3;
+- restauración de última búsqueda;
+- POST exitoso al equipo;
+- prevención de duplicados;
+- límite máximo de seis Pokémon;
+- carga del equipo desde la API propia;
+- error de backend y reintento en `/my-team`;
 
 ## Back-end
 
 El backend de PokeRockerDex se desarrolla en un repositorio independiente:
 
-https://github.com/ai-sprvvnt/pokerockerdex-backend
+[Repositorio del backend](https://github.com/ai-sprvvnt/pokerockerdex-backend)
 
-Su implementación corresponde a una etapa posterior del proyecto.
+Para completar los requisitos de integración de la Etapa 1.2 se implementó una API mínima con Node.js y Express.
+
+Actualmente proporciona:
+
+- `GET /teams`;
+- `POST /teams/pokemon`;
+- validación de datos;
+- prevención de duplicados;
+- límite de seis Pokémon.
+
+El equipo se almacena temporalmente en memoria. MongoDB, autenticación y persistencia por usuario pertenecen a etapas posteriores.
 
 ## Repositorio
 
-https://github.com/ai-sprvvnt/pokerockerdex-frontend
+[Repositorio del frontend](https://github.com/ai-sprvvnt/pokerockerdex-frontend)
+
+## Deploy
+
+El despliegue público final se encuentra pendiente.
+
+Actualmente el frontend y el backend se ejecutan de forma local durante el desarrollo y las pruebas de la Etapa 1.2.
+
+El despliegue coordinado de ambos servicios se realizará en una etapa posterior, cuando se implemente la persistencia definitiva y la configuración de producción.
 
 ## Aviso
 
