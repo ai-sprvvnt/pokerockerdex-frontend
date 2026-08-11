@@ -310,11 +310,28 @@ El equipo se almacena temporalmente en memoria. MongoDB, autenticación y persis
 
 ## Deploy
 
-El despliegue público final se encuentra pendiente.
+PokeRockerDex se encuentra desplegado públicamente en una VM de Google Cloud.
 
-Actualmente el frontend y el backend se ejecutan de forma local durante el desarrollo y las pruebas de la Etapa 1.2.
+### Frontend
 
-El despliegue coordinado de ambos servicios se realizará en una etapa posterior, cuando se implemente la persistencia definitiva y la configuración de producción.
+https://sprvvnt.mooo.com
+
+El frontend React/Vite se compila para producción y se sirve mediante Nginx con HTTPS y fallback para las rutas de React Router.
+
+### API propia
+
+https://api.sprvvnt.mooo.com
+
+El backend temporal de la Etapa 1.2 se ejecuta con Node.js y Express, administrado mediante PM2 y expuesto mediante Nginx sobre HTTPS.
+
+Endpoints disponibles:
+
+- `GET /teams`;
+- `POST /teams/pokemon`.
+
+El equipo continúa almacenándose temporalmente en memoria del proceso Node. Reiniciar el proceso o la VM elimina los datos actuales del equipo.
+
+MongoDB, autenticación, JWT y persistencia definitiva por usuario corresponden a etapas posteriores del proyecto full stack.
 
 ## Aviso
 
