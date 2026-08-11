@@ -5,10 +5,6 @@ import PokemonImage from '../PokemonImage/PokemonImage.jsx';
 function TeamPokemonCard({ pokemon, onRemove }) {
   const formattedId = String(pokemon.id).padStart(3, '0');
 
-  const handleRemove = () => {
-    onRemove(pokemon.id);
-  };
-
   return (
     <article
       className="team-pokemon-card"
@@ -46,14 +42,16 @@ function TeamPokemonCard({ pokemon, onRemove }) {
         </div>
       </Link>
 
-      <button
-        className="team-pokemon-card__remove-button"
-        type="button"
-        onClick={handleRemove}
-        aria-label={`Retirar a ${pokemon.name} del equipo`}
-      >
-        Retirar del equipo
-      </button>
+      {onRemove && (
+        <button
+          className="team-pokemon-card__remove-button"
+          type="button"
+          onClick={() => onRemove(pokemon.id)}
+          aria-label={`Retirar a ${pokemon.name} del equipo`}
+        >
+          Retirar del equipo
+        </button>
+      )}
     </article>
   );
 }
