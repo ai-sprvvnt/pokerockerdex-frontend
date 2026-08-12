@@ -1,0 +1,24 @@
+.error-message__button {
+  min-height: 48px;
+  margin-top: 24px;
+  padding: 0 24px;
+  border: 1px solid var(--color-primary);
+  border-radius: 8px;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.error-message__button:hover {
+  transform: translateY(-2px);
+  opacity: 0.9;
+}
+
+.error-message__button:focus-visible {
+  outline: 3px solid rgba(122, 40, 168, 0.3);
+  outline-offset: 3px;
+}

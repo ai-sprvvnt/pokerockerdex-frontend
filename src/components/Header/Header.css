@@ -1,0 +1,44 @@
+.header {
+  width: 100%;
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+}
+
+.header__container {
+  width: min(100% - 40px, 1200px);
+  min-height: 72px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.header__logo {
+  color: var(--color-heading);
+  font-size: 24px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.header__logo:hover {
+  opacity: 0.75;
+}
+
+.header__logo:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 4px;
+}
+
+@media screen and (max-width: 600px) {
+  .header__container {
+    width: min(100% - 32px, 1200px);
+    min-height: 64px;
+    gap: 16px;
+  }
+
+  .header__logo {
+    font-size: 20px;
+  }
+}

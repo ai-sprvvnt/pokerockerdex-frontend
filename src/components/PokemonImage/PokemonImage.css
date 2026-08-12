@@ -1,0 +1,17 @@
+.pokemon-image.pokemon-image--fallback {
+  display: flex;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  border: 1px dashed var(--color-muted);
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.pokemon-image__fallback-text {
+  max-width: 140px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.3;
+}

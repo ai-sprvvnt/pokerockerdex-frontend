@@ -1,0 +1,124 @@
+.team-pokemon-card {
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background-color: var(--color-surface);
+  box-shadow: 0 8px 24px rgba(30, 24, 51, 0.08);
+}
+
+.team-pokemon-card__link {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  color: inherit;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.team-pokemon-card__link:hover {
+  background-color: rgba(122, 40, 168, 0.04);
+}
+
+.team-pokemon-card__link:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: -3px;
+}
+
+.team-pokemon-card__image-container {
+  min-height: 190px;
+  padding: 24px;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(
+    circle,
+    rgba(122, 40, 168, 0.12),
+    rgba(122, 40, 168, 0.02) 68%
+  );
+}
+
+.team-pokemon-card__image {
+  width: min(100%, 165px);
+  aspect-ratio: 1;
+  object-fit: contain;
+  transition: transform 0.2s ease;
+}
+
+.team-pokemon-card__link:hover .team-pokemon-card__image {
+  transform: scale(1.05);
+}
+
+.team-pokemon-card__content {
+  padding: 18px 20px 22px;
+}
+
+.team-pokemon-card__number {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.team-pokemon-card__name {
+  margin: 8px 0 0;
+  color: var(--color-heading);
+  font-size: 24px;
+  line-height: 1.2;
+  text-transform: capitalize;
+}
+
+.team-pokemon-card__types {
+  margin: 16px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+}
+
+.team-pokemon-card__type {
+  padding: 5px 10px;
+  border-radius: 999px;
+  background-color: rgba(122, 40, 168, 0.1);
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.team-pokemon-card__remove-button {
+  min-height: 46px;
+  margin: 0 20px 20px;
+  padding: 0 16px;
+  border: 1px solid #b3261e;
+  border-radius: 8px;
+  background-color: transparent;
+  color: #b3261e;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.team-pokemon-card__remove-button:hover {
+  transform: translateY(-2px);
+  background-color: #b3261e;
+  color: #ffffff;
+}
+
+.team-pokemon-card__remove-button:focus-visible {
+  outline: 3px solid rgba(179, 38, 30, 0.25);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .team-pokemon-card__link,
+  .team-pokemon-card__image,
+  .team-pokemon-card__remove-button {
+    transition: none;
+  }
+}
