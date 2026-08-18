@@ -322,7 +322,7 @@ El frontend React/Vite se compila para producción y se sirve mediante Nginx con
 
 https://api.sprvvnt.mooo.com
 
-El backend temporal de la Etapa 1.2 se ejecuta con Node.js y Express, administrado mediante PM2 y expuesto mediante Nginx sobre HTTPS.
+La API propia utiliza el backend definitivo de PokeRockerDex con Node.js, Express, MongoDB, autenticación JWT y persistencia por usuario. Se ejecuta mediante PM2 y se expone a través de Nginx con HTTPS.
 
 Endpoints disponibles:
 
