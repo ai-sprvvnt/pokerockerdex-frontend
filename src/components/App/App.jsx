@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router';
 import Header from '../Header/Header.jsx';
 import Main from '../Main/Main.jsx';
@@ -21,8 +21,10 @@ import {
   SEARCH_RESULTS_BATCH_SIZE,
 } from '../../utils/constants.js';
 import './App.css';
+import CurrentUserContext from '../../contexts/CurrentUserContext.js';
 
 function App() {
+  const [currentUser, setCurrentUser] = useState(null);
   const [initialLastSearch] = useState(() => getLastSearchCache());
   const [pokemon, setPokemon] = useState(
     () => initialLastSearch?.results ?? [],
@@ -71,6 +73,14 @@ function App() {
 
   const { pathname } = useLocation();
   const isExplorerRoute = pathname === '/';
+
+  const currentUserContextValue = useMemo(
+    () => ({
+      currentUser,
+      setCurrentUser,
+    }),
+    [currentUser],
+  );
 
   useEffect(() => {
     if (isSearchMode || !isExplorerRoute) {
@@ -403,33 +413,33 @@ function App() {
   const canShowMore = isSearchMode && visibleSearchCount < searchMatches.length;
 
   return (
-    <div className="page">
-      <Header onResetExplorer={handleResetExplorer} />
-
-      <Main
-        pokemon={pokemon}
-        totalPokemon={totalPokemon}
-        currentPage={currentPage}
-        isLoading={isLoading}
-        apiError={apiError}
-        isSearchMode={isSearchMode}
-        searchQuery={searchQuery}
-        isRefreshing={isRefreshing}
-        isCacheFallback={isCacheFallback}
-        onSearchQueryChange={setSearchQuery}
-        onSearch={handleSearch}
-        onResetExplorer={handleResetExplorer}
-        onPreviousPage={handlePreviousPage}
-        onNextPage={handleNextPage}
-        onRetry={handleRetry}
-        isLoadingMore={isLoadingMore}
-        loadMoreError={loadMoreError}
-        canShowMore={canShowMore}
-        onShowMore={handleShowMore}
-      />
-
-      <Footer />
-    </div>
+    <CurrentUserContext.Provider value={currentUserContextValue}>
+      <div className="page">
+        <Header onResetExplorer={handleResetExplorer} />
+        <Main
+          pokemon={pokemon}
+          totalPokemon={totalPokemon}
+          currentPage={currentPage}
+          isLoading={isLoading}
+          apiError={apiError}
+          isSearchMode={isSearchMode}
+          searchQuery={searchQuery}
+          isRefreshing={isRefreshing}
+          isCacheFallback={isCacheFallback}
+          onSearchQueryChange={setSearchQuery}
+          onSearch={handleSearch}
+          onResetExplorer={handleResetExplorer}
+          onPreviousPage={handlePreviousPage}
+          onNextPage={handleNextPage}
+          onRetry={handleRetry}
+          isLoadingMore={isLoadingMore}
+          loadMoreError={loadMoreError}
+          canShowMore={canShowMore}
+          onShowMore={handleShowMore}
+        />
+        <Footer />
+      </div>
+    </CurrentUserContext.Provider>
   );
 }
 

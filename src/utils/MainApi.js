@@ -24,6 +24,48 @@ async function checkResponse(response) {
   throw error;
 }
 
+async function register({ email, password, name }) {
+  const response = await fetch(`${MAIN_API_BASE_URL}/signup`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      email,
+      password,
+      name,
+    }),
+  });
+
+  return checkResponse(response);
+}
+
+async function authorize({ email, password }) {
+  const response = await fetch(`${MAIN_API_BASE_URL}/signin`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      email,
+      password,
+    }),
+  });
+
+  return checkResponse(response);
+}
+
+async function getCurrentUser(token, signal) {
+  const response = await fetch(`${MAIN_API_BASE_URL}/users/me`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    signal,
+  });
+
+  return checkResponse(response);
+}
+
 async function getTeam(signal) {
   const response = await fetch(`${MAIN_API_BASE_URL}/teams`, {
     signal,
@@ -50,4 +92,11 @@ async function addPokemonToTeam(pokemon, signal) {
   return checkResponse(response);
 }
 
-export { MAIN_API_BASE_URL, getTeam, addPokemonToTeam };
+export {
+  MAIN_API_BASE_URL,
+  register,
+  authorize,
+  getCurrentUser,
+  getTeam,
+  addPokemonToTeam,
+};
