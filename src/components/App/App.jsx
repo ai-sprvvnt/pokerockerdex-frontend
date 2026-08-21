@@ -20,8 +20,11 @@ import {
   POKEMON_PER_PAGE,
   SEARCH_RESULTS_BATCH_SIZE,
 } from '../../utils/constants.js';
-import './App.css';
 import CurrentUserContext from '../../contexts/CurrentUserContext.js';
+import { getCurrentUser } from '../../utils/MainApi.js';
+import './App.css';
+
+const TOKEN_STORAGE_KEY = 'jwt';
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -81,6 +84,35 @@ function App() {
     }),
     [currentUser],
   );
+
+  useEffect(() => {
+    const token = localStorage.getItem(TOKEN_STORAGE_KEY);
+
+    if (!token) {
+      return undefined;
+    }
+
+    const controller = new AbortController();
+
+    getCurrentUser(token, controller.signal)
+      .then((user) => {
+        setCurrentUser(user);
+      })
+      .catch((error) => {
+        if (error.name === 'AbortError') {
+          return;
+        }
+
+        if (error.status === 401) {
+          localStorage.removeItem(TOKEN_STORAGE_KEY);
+          setCurrentUser(null);
+        }
+      });
+
+    return () => {
+      controller.abort();
+    };
+  }, []);
 
   useEffect(() => {
     if (isSearchMode || !isExplorerRoute) {
