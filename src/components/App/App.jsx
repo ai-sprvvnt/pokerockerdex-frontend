@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router';
 import Header from '../Header/Header.jsx';
 import Main from '../Main/Main.jsx';
@@ -21,13 +21,16 @@ import {
   SEARCH_RESULTS_BATCH_SIZE,
 } from '../../utils/constants.js';
 import CurrentUserContext from '../../contexts/CurrentUserContext.js';
-import { getCurrentUser } from '../../utils/MainApi.js';
+import { authorize, getCurrentUser } from '../../utils/MainApi.js';
 import './App.css';
 
 const TOKEN_STORAGE_KEY = 'jwt';
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
+  const [isAuthChecking, setIsAuthChecking] = useState(() =>
+    Boolean(localStorage.getItem(TOKEN_STORAGE_KEY)),
+  );
   const [initialLastSearch] = useState(() => getLastSearchCache());
   const [pokemon, setPokemon] = useState(
     () => initialLastSearch?.results ?? [],
@@ -77,12 +80,44 @@ function App() {
   const { pathname } = useLocation();
   const isExplorerRoute = pathname === '/';
 
+  const handleLogin = useCallback(async ({ email, password }) => {
+    const { token } = await authorize({ email, password });
+
+    localStorage.setItem(TOKEN_STORAGE_KEY, token);
+
+    try {
+      const user = await getCurrentUser(token);
+
+      setCurrentUser(user);
+
+      return user;
+    } catch (error) {
+      if (error.status === 401) {
+        localStorage.removeItem(TOKEN_STORAGE_KEY);
+      }
+
+      setCurrentUser(null);
+
+      throw error;
+    }
+  }, []);
+
+  const handleLogout = useCallback(() => {
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
+    setCurrentUser(null);
+  }, []);
+
+  const loggedIn = currentUser !== null;
+
   const currentUserContextValue = useMemo(
     () => ({
       currentUser,
-      setCurrentUser,
+      loggedIn,
+      isAuthChecking,
+      onLogin: handleLogin,
+      onLogout: handleLogout,
     }),
-    [currentUser],
+    [currentUser, loggedIn, isAuthChecking, handleLogin, handleLogout],
   );
 
   useEffect(() => {
@@ -106,6 +141,11 @@ function App() {
         if (error.status === 401) {
           localStorage.removeItem(TOKEN_STORAGE_KEY);
           setCurrentUser(null);
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setIsAuthChecking(false);
         }
       });
 
