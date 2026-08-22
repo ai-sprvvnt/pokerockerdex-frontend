@@ -58,7 +58,10 @@ function Main({
           }
         />
 
-        <Route path="/pokemon/:id" element={<PokemonDetail />} />
+        <Route
+          path="/pokemon/:id"
+          element={<PokemonDetail onLoginRequired={onLoginRequired} />}
+        />
         <Route
           path="/my-team"
           element={

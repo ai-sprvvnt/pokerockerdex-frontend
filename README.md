@@ -2,13 +2,14 @@
 
 Frontend de **PokeRockerDex**, una aplicación full stack desarrollada como Proyecto Final de Desarrollo Web de TripleTen.
 
-La aplicación permite explorar Pokémon mediante PokéAPI, realizar búsquedas por nombre o número, consultar información detallada y formar temporalmente un equipo personal de hasta seis Pokémon mediante la API propia de PokeRockerDex.
+La aplicación permite explorar Pokémon mediante PokéAPI, realizar búsquedas por nombre o número, consultar información detallada y formar un equipo personal persistente de hasta seis Pokémon mediante la API propia de PokeRockerDex.
 
 ## Estado del proyecto
 
 La interfaz de React, la integración con PokéAPI y la integración mínima con la API propia están implementadas.
 
-Actualmente el proyecto se encuentra finalizando las correcciones de la **Etapa 1.2 — Integración con API** después de la primera revisión de TripleTen.
+Actualmente el proyecto se encuentra en la **Etapa 3 — Autorización con React**.
+La etapa 1 y la etapa 2 se encuentran aprobadas y cerradas. Durante esta etapa se está implementando en el frontend el registro, inicio de sesión, persistencia de sesión mediante JWT, rutas protegidas y gestión autenticada del equipo personal.
 
 ### Implementado
 
@@ -44,9 +45,9 @@ Actualmente el proyecto se encuentra finalizando las correcciones de la **Etapa 
 
 ## Equipo personal
 
-La ruta `/my-team` consume actualmente la API propia de PokeRockerDex.
+La ruta `/my-team` consume la API propia de PokeRockerDex y está protegida mediante autorización.
 
-Desde la vista de detalle de un Pokémon es posible utilizar **Agregar a mi equipo**, lo que realiza una solicitud:
+Desde la vista de detalle de un Pokémon es posible utilizar **Agregar a mi equipo**, lo que realiza:
 
 `POST /teams/pokemon`
 
@@ -54,38 +55,43 @@ El equipo puede consultarse mediante:
 
 `GET /teams`
 
-Durante esta etapa el equipo se mantiene temporalmente en memoria dentro del servidor.
+Un integrante puede eliminarse mediante:
+
+`DELETE /teams/pokemon/:id`
+
+Todas estas solicitudes utilizan el JWT del usuario autenticado.
+
+El equipo se almacena de forma persistente en MongoDB y está asociado al usuario propietario.
 
 Reglas implementadas:
 
 - máximo de seis Pokémon;
-- no se permiten integrantes duplicados;
+- no se permiten integrantes duplicados por usuario;
+- cada usuario mantiene su propio equipo;
 - los errores HTTP del backend se muestran en la interfaz;
-- `/my-team` refleja los datos recibidos desde la API propia.
-
-La persistencia mediante MongoDB, autenticación, usuarios y eliminación definitiva de integrantes pertenecen a etapas posteriores.
+- `/my-team` refleja los datos persistidos por la API propia.
 
 ## Funcionalidades pendientes
 
-Las siguientes funcionalidades pertenecen a etapas posteriores del proyecto:
+La Etapa 3 se encuentra en desarrollo.
 
-- registro de usuarios;
-- inicio de sesión;
-- autenticación mediante JWT;
-- protección de `/my-team`;
-- persistencia del equipo mediante base de datos;
-- asociación de equipos con usuarios;
-- eliminación de integrantes mediante la API propia;
-- despliegue final coordinado del frontend y backend.
+Pendientes principales:
+
+- completar los ajustes finales de autorización solicitados por la rúbrica;
+- finalizar QA responsivo de autenticación;
+- actualizar documentación de la Etapa 3;
+- desplegar la versión actualizada del frontend;
+- abrir el pull request `stage-react-auth -> main`;
+- completar la revisión de TripleTen.
 
 ## Rutas
 
-| Ruta           | Estado                | Descripción                                         |
-| -------------- | --------------------- | --------------------------------------------------- |
-| `/`            | Pública               | Exploración paginada y búsqueda de Pokémon          |
-| `/pokemon/:id` | Pública               | Información detallada y agregado temporal al equipo |
-| `/my-team`     | Temporalmente pública | Equipo obtenido desde la API propia                 |
-| `*`            | Pública               | Página 404                                          |
+| Ruta           | Estado    | Descripción                                                     |
+| -------------- | --------- | --------------------------------------------------------------- |
+| `/`            | Pública   | Exploración paginada y búsqueda de Pokémon                      |
+| `/pokemon/:id` | Pública   | Información detallada; agregar al equipo requiere autenticación |
+| `/my-team`     | Protegida | Equipo personal del usuario autenticado                         |
+| `*`            | Pública   | Página 404                                                      |
 
 ## PokéAPI
 
@@ -112,12 +118,18 @@ El cliente se encuentra en:
 
 Actualmente utiliza:
 
+- `POST /signup` para registrar usuarios;
+- `POST /signin` para iniciar sesión;
+- `GET /users/me` para recuperar al usuario autenticado;
 - `GET /teams` para consultar el equipo;
-- `POST /teams/pokemon` para agregar un Pokémon.
+- `POST /teams/pokemon` para agregar un Pokémon;
+- `DELETE /teams/pokemon/:id` para eliminar un integrante.
 
-El backend valida los datos recibidos, impide duplicados y limita el equipo a seis integrantes.
+Las rutas protegidas utilizan:
 
-Durante la Etapa 1.2 los datos se almacenan temporalmente en memoria. La persistencia definitiva se implementará posteriormente mediante base de datos.
+`Authorization: Bearer <JWT>`
+
+El backend utiliza MongoDB para persistir usuarios y equipos, y cada Pokémon guardado queda asociado a su propietario.
 
 ## Caché y resiliencia
 
@@ -296,13 +308,18 @@ Para completar los requisitos de integración de la Etapa 1.2 se implementó una
 
 Actualmente proporciona:
 
+- `POST /signup`;
+- `POST /signin`;
+- `GET /users/me`;
 - `GET /teams`;
 - `POST /teams/pokemon`;
-- validación de datos;
+- `DELETE /teams/pokemon/:id`;
+- autenticación mediante JWT;
+- persistencia mediante MongoDB;
+- asociación de recursos por usuario;
 - prevención de duplicados;
-- límite de seis Pokémon.
-
-El equipo se almacena temporalmente en memoria. MongoDB, autenticación y persistencia por usuario pertenecen a etapas posteriores.
+- límite de seis Pokémon;
+- ownership al eliminar integrantes.
 
 ## Repositorio
 
@@ -328,10 +345,6 @@ Endpoints disponibles:
 
 - `GET /teams`;
 - `POST /teams/pokemon`.
-
-El equipo continúa almacenándose temporalmente en memoria del proceso Node. Reiniciar el proceso o la VM elimina los datos actuales del equipo.
-
-MongoDB, autenticación, JWT y persistencia definitiva por usuario corresponden a etapas posteriores del proyecto full stack.
 
 ## Aviso
 

@@ -25,14 +25,18 @@ import { authorize, getCurrentUser } from '../../utils/MainApi.js';
 import './App.css';
 import Login from '../Login/Login.jsx';
 import Register from '../Register/Register.jsx';
+import RegistrationSuccess from '../RegistrationSuccess/RegistrationSuccess.jsx';
 
 const TOKEN_STORAGE_KEY = 'jwt';
 
 function App() {
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isRegistrationSuccessOpen, setIsRegistrationSuccessOpen] =
+    useState(false);
   const handleOpenLogin = useCallback(() => {
     setIsRegisterOpen(false);
+    setIsRegistrationSuccessOpen(false);
     setIsLoginOpen(true);
   }, []);
 
@@ -42,6 +46,7 @@ function App() {
 
   const handleOpenRegister = useCallback(() => {
     setIsLoginOpen(false);
+    setIsRegistrationSuccessOpen(false);
     setIsRegisterOpen(true);
   }, []);
 
@@ -51,7 +56,11 @@ function App() {
 
   const handleRegistrationSuccess = useCallback(() => {
     setIsRegisterOpen(false);
-    setIsLoginOpen(true);
+    setIsRegistrationSuccessOpen(true);
+  }, []);
+
+  const handleCloseRegistrationSuccess = useCallback(() => {
+    setIsRegistrationSuccessOpen(false);
   }, []);
 
   const [currentUser, setCurrentUser] = useState(null);
@@ -548,6 +557,11 @@ function App() {
         isOpen={isRegisterOpen}
         onClose={handleCloseRegister}
         onRegistrationSuccess={handleRegistrationSuccess}
+      />
+      <RegistrationSuccess
+        isOpen={isRegistrationSuccessOpen}
+        onClose={handleCloseRegistrationSuccess}
+        onLoginClick={handleOpenLogin}
       />
     </CurrentUserContext.Provider>
   );

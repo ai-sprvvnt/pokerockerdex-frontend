@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import ErrorMessage from '../ErrorMessage/ErrorMessage.jsx';
 import Preloader from '../Preloader/Preloader.jsx';
@@ -6,6 +6,7 @@ import { getPokemonByNameOrId } from '../../utils/PokeApi.js';
 import { addPokemonToTeam } from '../../utils/MainApi.js';
 import './PokemonDetail.css';
 import PokemonImage from '../PokemonImage/PokemonImage.jsx';
+import CurrentUserContext from '../../contexts/CurrentUserContext.js';
 
 const STAT_LABELS = {
   hp: 'Puntos de salud',
@@ -22,8 +23,9 @@ const measurementFormatter = new Intl.NumberFormat('es-MX', {
 
 const formatApiName = (name) => name.replaceAll('-', ' ');
 
-function PokemonDetail() {
+function PokemonDetail({ onLoginRequired }) {
   const { id } = useParams();
+  const { loggedIn } = useContext(CurrentUserContext);
 
   const [pokemon, setPokemon] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -93,6 +95,11 @@ function PokemonDetail() {
   };
 
   const handleAddToTeam = async () => {
+    if (!loggedIn) {
+      onLoginRequired();
+      return;
+    }
+
     if (!pokemon || isAddingToTeam || isAddedToTeam) {
       return;
     }
@@ -274,7 +281,7 @@ function PokemonDetail() {
               aria-live="polite"
             >
               {teamMessage ||
-                'El equipo se guarda temporalmente mientras el servidor está activo.'}
+                'Los Pokémon que agregues se guardarán en tu equipo personal.'}
             </p>
           </div>
         </article>
