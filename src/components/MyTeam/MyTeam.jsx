@@ -6,7 +6,7 @@ import { MAX_TEAM_SIZE } from '../../utils/constants.js';
 import './MyTeam.css';
 import ErrorMessage from '../ErrorMessage/ErrorMessage.jsx';
 import Preloader from '../Preloader/Preloader.jsx';
-import { getTeam } from '../../utils/MainApi.js';
+import { getTeam, removePokemonFromTeam } from '../../utils/MainApi.js';
 
 function MyTeam() {
   const [team, setTeam] = useState([]);
@@ -21,8 +21,10 @@ function MyTeam() {
       setIsLoading(true);
       setApiError(null);
 
+      const token = localStorage.getItem('jwt');
+
       try {
-        const teamData = await getTeam(controller.signal);
+        const teamData = await getTeam(token, controller.signal);
 
         if (!controller.signal.aborted) {
           setTeam(teamData.pokemon);
@@ -49,6 +51,20 @@ function MyTeam() {
 
   const handleRetry = () => {
     setRetryRequest((request) => request + 1);
+  };
+
+  const handleRemovePokemon = async (pokemonId) => {
+    const token = localStorage.getItem('jwt');
+
+    try {
+      await removePokemonFromTeam(pokemonId, token);
+
+      setTeam((currentTeam) =>
+        currentTeam.filter((pokemon) => pokemon._id !== pokemonId),
+      );
+    } catch (error) {
+      setApiError(error);
+    }
   };
 
   const availableSlots = MAX_TEAM_SIZE - team.length;
@@ -94,8 +110,8 @@ function MyTeam() {
         </header>
 
         <p className="my-team__notice">
-          El equipo se guarda temporalmente en el servidor durante esta etapa.
-          Se reiniciará cuando el backend vuelva a iniciarse.
+          Tu equipo se guarda de forma segura en tu cuenta y estará disponible
+          cuando vuelvas a iniciar sesión.
         </p>
 
         {team.length === 0 && <EmptyTeam />}
@@ -106,7 +122,10 @@ function MyTeam() {
         >
           {team.map((pokemon) => (
             <li className="my-team__item" key={pokemon.id}>
-<TeamPokemonCard pokemon={pokemon} />
+              <TeamPokemonCard
+                pokemon={pokemon}
+                onRemove={() => handleRemovePokemon(pokemon._id)}
+              />
             </li>
           ))}
 

@@ -23,10 +23,37 @@ import {
 import CurrentUserContext from '../../contexts/CurrentUserContext.js';
 import { authorize, getCurrentUser } from '../../utils/MainApi.js';
 import './App.css';
+import Login from '../Login/Login.jsx';
+import Register from '../Register/Register.jsx';
 
 const TOKEN_STORAGE_KEY = 'jwt';
 
 function App() {
+  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const handleOpenLogin = useCallback(() => {
+    setIsRegisterOpen(false);
+    setIsLoginOpen(true);
+  }, []);
+
+  const handleCloseLogin = useCallback(() => {
+    setIsLoginOpen(false);
+  }, []);
+
+  const handleOpenRegister = useCallback(() => {
+    setIsLoginOpen(false);
+    setIsRegisterOpen(true);
+  }, []);
+
+  const handleCloseRegister = useCallback(() => {
+    setIsRegisterOpen(false);
+  }, []);
+
+  const handleRegistrationSuccess = useCallback(() => {
+    setIsRegisterOpen(false);
+    setIsLoginOpen(true);
+  }, []);
+
   const [currentUser, setCurrentUser] = useState(null);
   const [isAuthChecking, setIsAuthChecking] = useState(() =>
     Boolean(localStorage.getItem(TOKEN_STORAGE_KEY)),
@@ -487,7 +514,11 @@ function App() {
   return (
     <CurrentUserContext.Provider value={currentUserContextValue}>
       <div className="page">
-        <Header onResetExplorer={handleResetExplorer} />
+        <Header
+          onResetExplorer={handleResetExplorer}
+          onLoginClick={handleOpenLogin}
+          onRegisterClick={handleOpenRegister}
+        />
         <Main
           pokemon={pokemon}
           totalPokemon={totalPokemon}
@@ -508,9 +539,16 @@ function App() {
           loadMoreError={loadMoreError}
           canShowMore={canShowMore}
           onShowMore={handleShowMore}
+          onLoginRequired={handleOpenLogin}
         />
         <Footer />
       </div>
+      <Login isOpen={isLoginOpen} onClose={handleCloseLogin} />
+      <Register
+        isOpen={isRegisterOpen}
+        onClose={handleCloseRegister}
+        onRegistrationSuccess={handleRegistrationSuccess}
+      />
     </CurrentUserContext.Provider>
   );
 }

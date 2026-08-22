@@ -66,19 +66,23 @@ async function getCurrentUser(token, signal) {
   return checkResponse(response);
 }
 
-async function getTeam(signal) {
+async function getTeam(token, signal) {
   const response = await fetch(`${MAIN_API_BASE_URL}/teams`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
     signal,
   });
 
   return checkResponse(response);
 }
 
-async function addPokemonToTeam(pokemon, signal) {
+async function addPokemonToTeam(pokemon, token, signal) {
   const response = await fetch(`${MAIN_API_BASE_URL}/teams/pokemon`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
       id: pokemon.id,
@@ -92,6 +96,21 @@ async function addPokemonToTeam(pokemon, signal) {
   return checkResponse(response);
 }
 
+async function removePokemonFromTeam(pokemonId, token, signal) {
+  const response = await fetch(
+    `${MAIN_API_BASE_URL}/teams/pokemon/${pokemonId}`,
+    {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      signal,
+    },
+  );
+
+  return checkResponse(response);
+}
+
 export {
   MAIN_API_BASE_URL,
   register,
@@ -99,4 +118,5 @@ export {
   getCurrentUser,
   getTeam,
   addPokemonToTeam,
+  removePokemonFromTeam,
 };

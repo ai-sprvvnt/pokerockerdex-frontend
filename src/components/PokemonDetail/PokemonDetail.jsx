@@ -107,8 +107,14 @@ function PokemonDetail() {
     setTeamMessage('');
     setTeamMessageType('');
 
+    const token = localStorage.getItem('jwt');
+
     try {
-      const teamData = await addPokemonToTeam(pokemon, controller.signal);
+      const teamData = await addPokemonToTeam(
+        pokemon,
+        token,
+        controller.signal,
+      );
 
       if (controller.signal.aborted) {
         return;
