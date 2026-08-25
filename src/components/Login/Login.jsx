@@ -1,4 +1,8 @@
 import { useCallback, useContext, useEffect, useState } from 'react';
+
+import { Eye, EyeOff } from 'lucide';
+import { MorphIcon } from 'morphicons/react';
+
 import CurrentUserContext from '../../contexts/CurrentUserContext.js';
 import './Login.css';
 
@@ -40,12 +44,14 @@ function Login({ isOpen, onClose }) {
   const [errors, setErrors] = useState(INITIAL_ERRORS);
   const [serverError, setServerError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const resetForm = useCallback(() => {
     setFormValues(INITIAL_FORM);
     setErrors(INITIAL_ERRORS);
     setServerError('');
     setIsSubmitting(false);
+    setShowPassword(false);
   }, []);
 
   const handleClose = useCallback(() => {
@@ -191,29 +197,52 @@ function Login({ isOpen, onClose }) {
             </span>
           </label>
 
-          <label className="login__field">
-            <span className="login__label">Contraseña</span>
+          <div className="login__field">
+            <label className="login__label" htmlFor="login-password">
+              Contraseña
+            </label>
 
-            <input
-              className={`login__input${
-                errors.password ? ' login__input_error' : ''
-              }`}
-              type="password"
-              name="password"
-              value={formValues.password}
-              placeholder="Tu contraseña"
-              autoComplete="current-password"
-              required
-              aria-invalid={Boolean(errors.password)}
-              aria-describedby="login-password-error"
-              onChange={handleChange}
-              onBlur={handleBlur}
-            />
+            <div className="login__password-wrapper">
+              <input
+                className={`login__input login__input_password${
+                  errors.password ? ' login__input_error' : ''
+                }`}
+                id="login-password"
+                type={showPassword ? 'text' : 'password'}
+                name="password"
+                value={formValues.password}
+                placeholder="Tu contraseña"
+                autoComplete="current-password"
+                required
+                aria-invalid={Boolean(errors.password)}
+                aria-describedby="login-password-error"
+                onChange={handleChange}
+                onBlur={handleBlur}
+              />
+
+              <button
+                className="login__password-toggle"
+                type="button"
+                aria-label={
+                  showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'
+                }
+                aria-pressed={showPassword}
+                onClick={() => setShowPassword((currentValue) => !currentValue)}
+              >
+                <MorphIcon
+                  icon={showPassword ? EyeOff : Eye}
+                  size={20}
+                  strokeWidth={2}
+                  spring={{ stiffness: 90, damping: 18 }}
+                  reducedMotion="user"
+                />
+              </button>
+            </div>
 
             <span className="login__error" id="login-password-error">
               {errors.password}
             </span>
-          </label>
+          </div>
 
           {serverError && (
             <p className="login__server-error" role="alert">

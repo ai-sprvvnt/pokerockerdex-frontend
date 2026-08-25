@@ -72,6 +72,41 @@
   outline: none;
 }
 
+.login__password-wrapper {
+  position: relative;
+}
+
+.login__input_password {
+  padding-right: 48px;
+}
+
+.login__password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(-50%);
+  background: transparent;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.login__password-toggle:hover {
+  color: var(--color-primary);
+}
+
+.login__password-toggle:focus-visible {
+  border-radius: 4px;
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
 .login__submit {
   min-height: 48px;
   border: 0;

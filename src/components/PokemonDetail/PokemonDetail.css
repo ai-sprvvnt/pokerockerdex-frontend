@@ -151,6 +151,10 @@
   transition:
     transform 0.2s ease,
     opacity 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 
 .pokemon-detail__team-button:hover:not(:disabled) {

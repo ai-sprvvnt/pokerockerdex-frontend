@@ -7,6 +7,8 @@ import { addPokemonToTeam } from '../../utils/MainApi.js';
 import './PokemonDetail.css';
 import PokemonImage from '../PokemonImage/PokemonImage.jsx';
 import CurrentUserContext from '../../contexts/CurrentUserContext.js';
+import { Check, Plus } from 'lucide';
+import { MorphIcon } from 'morphicons/react';
 
 const STAT_LABELS = {
   hp: 'Puntos de salud',
@@ -265,11 +267,21 @@ function PokemonDetail({ onLoginRequired }) {
               onClick={handleAddToTeam}
               disabled={isAddingToTeam || isAddedToTeam}
             >
-              {isAddingToTeam
-                ? 'Agregando...'
-                : isAddedToTeam
-                  ? 'Agregado al equipo'
-                  : 'Agregar a mi equipo'}
+              <MorphIcon
+                icon={isAddedToTeam ? Check : Plus}
+                size={20}
+                strokeWidth={2}
+                spring={{ stiffness: 90, damping: 18 }}
+                reducedMotion="user"
+              />
+
+              <span>
+                {isAddingToTeam
+                  ? 'Agregando...'
+                  : isAddedToTeam
+                    ? 'Agregado al equipo'
+                    : 'Agregar a mi equipo'}
+              </span>
             </button>
 
             <p
