@@ -6,10 +6,13 @@ La aplicación permite explorar Pokémon mediante PokéAPI, realizar búsquedas 
 
 ## Estado del proyecto
 
-La interfaz de React, la integración con PokéAPI y la integración mínima con la API propia están implementadas.
+La interfaz de React, la integración con PokéAPI, la autenticación y la integración con la API propia de PokeRockerDex están implementadas.
 
 Actualmente el proyecto se encuentra en la **Etapa 3 — Autorización con React**.
-La etapa 1 y la etapa 2 se encuentran aprobadas y cerradas. Durante esta etapa se está implementando en el frontend el registro, inicio de sesión, persistencia de sesión mediante JWT, rutas protegidas y gestión autenticada del equipo personal.
+
+Las Etapas 1 y 2 se encuentran aprobadas y cerradas. La implementación de la Etapa 3 está completada y validada localmente, incluyendo registro, inicio de sesión, persistencia de sesión mediante JWT, rutas protegidas y gestión autenticada del equipo personal.
+
+Quedan pendientes el despliegue actualizado del frontend, la validación pública, la apertura del pull request `stage-react-auth -> main` y la revisión final de TripleTen.
 
 ### Implementado
 
@@ -33,15 +36,62 @@ La etapa 1 y la etapa 2 se encuentran aprobadas y cerradas. Durante esta etapa s
 - Validación y eliminación de entradas de caché corruptas.
 - Uso de caché expirada como contingencia cuando PokéAPI no responde.
 - Fallback visual cuando una imagen Pokémon no puede cargarse.
-- Solicitud POST asíncrona real hacia la API propia de PokeRockerDex.
-- Agregado de Pokémon al equipo desde la vista de detalle.
-- Prevención de Pokémon duplicados en el backend.
-- Límite máximo de seis integrantes.
+- Registro de usuarios mediante la API propia.
+- Inicio de sesión mediante correo electrónico y contraseña.
+- Almacenamiento del JWT en `localStorage`.
+- Restauración automática de sesión mediante `GET /users/me`.
+- Cierre de sesión y eliminación del JWT.
+- Protección de la ruta `/my-team`.
+- Apertura del modal de inicio de sesión al intentar acceder a una función protegida sin autenticación.
+- Prevención del `POST /teams/pokemon` cuando un usuario no autenticado intenta agregar un Pokémon.
 - Consulta del equipo mediante `GET /teams`.
-- Vista `/my-team` alimentada por la API propia.
-- Manejo de error y reintento al consultar el equipo.
+- Agregado de Pokémon mediante `POST /teams/pokemon`.
+- Eliminación de integrantes mediante `DELETE /teams/pokemon/:id`.
+- Persistencia del equipo en MongoDB.
+- Asociación del equipo con el usuario propietario.
+- Prevención de Pokémon duplicados.
+- Límite máximo de seis integrantes.
+- Manejo de errores HTTP enviados por la API propia.
+- Transición `Eye ↔ EyeOff` para mostrar u ocultar contraseñas.
+- Transición `Plus → Check` después de agregar correctamente un Pokémon.
+- Respeto de `prefers-reduced-motion` en las transiciones.
+- Identidad visual propia de PokeRockerDex mediante favicon y Apple Touch Icon.
 - Interfaz responsiva desde 320 px.
 - Página 404 para rutas inexistentes.
+
+## Autenticación y sesión
+
+PokeRockerDex utiliza autenticación basada en JWT.
+
+El registro se realiza mediante:
+
+`POST /signup`
+
+El inicio de sesión se realiza mediante:
+
+`POST /signin`
+
+Después de una autenticación correcta, el token JWT se almacena en `localStorage`.
+
+La aplicación utiliza:
+
+`GET /users/me`
+
+para recuperar al usuario asociado al token y restaurar automáticamente la sesión después de recargar la página.
+
+Las solicitudes protegidas utilizan:
+
+`Authorization: Bearer <JWT>`
+
+Al cerrar sesión:
+
+- se elimina el JWT almacenado;
+- se limpia el estado del usuario autenticado;
+- las rutas protegidas dejan de estar disponibles.
+
+La ruta `/my-team` se protege desde React. Un usuario sin sesión válida no puede acceder al equipo personal.
+
+Si un usuario no autenticado intenta agregar un Pokémon desde su vista de detalle, la aplicación abre el modal de inicio de sesión y no realiza la solicitud `POST /teams/pokemon`.
 
 ## Equipo personal
 
@@ -68,19 +118,19 @@ Reglas implementadas:
 - máximo de seis Pokémon;
 - no se permiten integrantes duplicados por usuario;
 - cada usuario mantiene su propio equipo;
+- solamente el propietario puede administrar sus recursos;
 - los errores HTTP del backend se muestran en la interfaz;
 - `/my-team` refleja los datos persistidos por la API propia.
 
 ## Funcionalidades pendientes
 
-La Etapa 3 se encuentra en desarrollo.
+La implementación local de la Etapa 3 está completada.
 
-Pendientes principales:
+Pendientes para cerrar la entrega:
 
-- completar los ajustes finales de autorización solicitados por la rúbrica;
-- finalizar QA responsivo de autenticación;
-- actualizar documentación de la Etapa 3;
+- generar el build productivo con la URL de la API de producción;
 - desplegar la versión actualizada del frontend;
+- validar públicamente autenticación y gestión del equipo;
 - abrir el pull request `stage-react-auth -> main`;
 - completar la revisión de TripleTen.
 
@@ -116,7 +166,7 @@ El cliente se encuentra en:
 
 `src/utils/MainApi.js`
 
-Actualmente utiliza:
+Endpoints utilizados:
 
 - `POST /signup` para registrar usuarios;
 - `POST /signin` para iniciar sesión;
@@ -130,6 +180,36 @@ Las rutas protegidas utilizan:
 `Authorization: Bearer <JWT>`
 
 El backend utiliza MongoDB para persistir usuarios y equipos, y cada Pokémon guardado queda asociado a su propietario.
+
+## Configuración de la API
+
+El cliente de la API propia utiliza la variable de entorno:
+
+`VITE_API_BASE_URL`
+
+Para desarrollo puede configurarse, por ejemplo:
+
+```env
+VITE_API_BASE_URL=http://localhost:3000
+```
+
+Si la variable no está definida, el frontend utiliza como fallback:
+
+```text
+http://localhost:3001
+```
+
+Otra opción para desarrollo es iniciar el backend explícitamente en ese puerto:
+
+```bash
+PORT=3001 npm run dev
+```
+
+Para producción se utiliza:
+
+```env
+VITE_API_BASE_URL=https://api.sprvvnt.mooo.com
+```
 
 ## Caché y resiliencia
 
@@ -166,7 +246,11 @@ Se conservan la consulta, los resultados necesarios y la cantidad actualmente vi
 - Flexbox
 - CSS Grid
 - PokéAPI
+- `fetch()`
 - `localStorage`
+- JWT
+- Morphicons
+- Lucide
 - ESLint
 
 ## Instalación
@@ -188,6 +272,12 @@ Inicia el servidor de desarrollo:
 
 ```bash
 npm run dev
+```
+
+Si se utiliza el backend local en su puerto predeterminado, configura previamente:
+
+```env
+VITE_API_BASE_URL=http://localhost:3000
 ```
 
 ## Scripts
@@ -221,10 +311,14 @@ npm run preview
 ```text
 src/
 ├── components/
+│   ├── About/
 │   ├── App/
+│   ├── EmptyTeam/
 │   ├── ErrorMessage/
+│   ├── Footer/
 │   ├── Header/
 │   ├── Home/
+│   ├── Login/
 │   ├── Main/
 │   ├── MyTeam/
 │   ├── Navigation/
@@ -236,9 +330,14 @@ src/
 │   ├── PokemonDetail/
 │   ├── PokemonImage/
 │   ├── Preloader/
+│   ├── ProtectedRoute/
+│   ├── Register/
+│   ├── RegistrationSuccess/
 │   ├── SearchForm/
 │   ├── TeamPokemonCard/
 │   └── TeamSlot/
+├── contexts/
+│   └── CurrentUserContext.js
 ├── images/
 ├── utils/
 │   ├── PokeApi.js
@@ -266,6 +365,8 @@ Durante las pruebas se revisaron los siguientes anchos:
 
 En esos tamaños no se detectó overflow horizontal.
 
+La navegación adapta su distribución en pantallas pequeñas para mantener visibles y accesibles las opciones de autenticación y navegación.
+
 ## Calidad
 
 Antes de integrar cambios se utilizan:
@@ -288,15 +389,35 @@ También se han probado:
 - conexión 3G simulada;
 - navegación entre rutas;
 - página 404;
-- comportamiento responsivo;
+- comportamiento responsivo desde 320 px;
+- ausencia de overflow horizontal en móvil;
 - búsqueda con múltiples coincidencias;
 - patrón Mostrar más 3 + 3;
 - restauración de última búsqueda;
+- registro exitoso;
+- prevención de registro duplicado;
+- inicio de sesión válido;
+- inicio de sesión con credenciales incorrectas;
+- almacenamiento del JWT;
+- recuperación del usuario mediante `GET /users/me`;
+- restauración de sesión después de recargar;
+- cierre de sesión;
+- eliminación del JWT al cerrar sesión;
+- protección de `/my-team`;
+- acceso autenticado a `/my-team`;
+- intento de agregar un Pokémon sin sesión;
+- apertura del modal de Login sin ejecutar el POST protegido;
 - POST exitoso al equipo;
-- prevención de duplicados;
+- transición `Plus → Check` después de un POST exitoso;
+- prevención de duplicados mediante respuesta `409`;
+- conservación de `Plus` cuando el POST falla;
 - límite máximo de seis Pokémon;
 - carga del equipo desde la API propia;
+- eliminación de integrantes del equipo;
+- actualización de la interfaz después de eliminar;
 - error de backend y reintento en `/my-team`;
+- comportamiento de `Eye ↔ EyeOff`;
+- respeto de `prefers-reduced-motion`.
 
 ## Back-end
 
@@ -304,7 +425,7 @@ El backend de PokeRockerDex se desarrolla en un repositorio independiente:
 
 [Repositorio del backend](https://github.com/ai-sprvvnt/pokerockerdex-backend)
 
-Para completar los requisitos de integración de la Etapa 1.2 se implementó una API mínima con Node.js y Express.
+El backend definitivo está desarrollado con Node.js, Express y MongoDB.
 
 Actualmente proporciona:
 
@@ -343,8 +464,12 @@ La API propia utiliza el backend definitivo de PokeRockerDex con Node.js, Expres
 
 Endpoints disponibles:
 
+- `POST /signup`;
+- `POST /signin`;
+- `GET /users/me`;
 - `GET /teams`;
-- `POST /teams/pokemon`.
+- `POST /teams/pokemon`;
+- `DELETE /teams/pokemon/:id`.
 
 ## Aviso
 
