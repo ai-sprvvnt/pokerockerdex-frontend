@@ -2,7 +2,7 @@ import { Link } from 'react-router';
 import Navigation from '../Navigation/Navigation.jsx';
 import './Header.css';
 
-function Header({ onResetExplorer }) {
+function Header({ onResetExplorer, onLoginClick, onRegisterClick }) {
   return (
     <header className="header">
       <div className="header__container">
@@ -10,7 +10,11 @@ function Header({ onResetExplorer }) {
           PokeRockerDex
         </Link>
 
-        <Navigation onResetExplorer={onResetExplorer} />
+        <Navigation
+          onResetExplorer={onResetExplorer}
+          onLoginClick={onLoginClick}
+          onRegisterClick={onRegisterClick}
+        />
       </div>
     </header>
   );

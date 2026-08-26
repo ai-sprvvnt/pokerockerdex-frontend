@@ -3,6 +3,7 @@ import Home from '../Home/Home.jsx';
 import PokemonDetail from '../PokemonDetail/PokemonDetail.jsx';
 import MyTeam from '../MyTeam/MyTeam.jsx';
 import NotFound from '../NotFound/NotFound.jsx';
+import ProtectedRoute from '../ProtectedRoute/ProtectedRoute.jsx';
 import './Main.css';
 
 function Main({
@@ -25,6 +26,7 @@ function Main({
   onNextPage,
   onRetry,
   onShowMore,
+  onLoginRequired,
 }) {
   return (
     <main className="main">
@@ -56,8 +58,18 @@ function Main({
           }
         />
 
-        <Route path="/pokemon/:id" element={<PokemonDetail />} />
-        <Route path="/my-team" element={<MyTeam />} />
+        <Route
+          path="/pokemon/:id"
+          element={<PokemonDetail onLoginRequired={onLoginRequired} />}
+        />
+        <Route
+          path="/my-team"
+          element={
+            <ProtectedRoute onUnauthorized={onLoginRequired}>
+              <MyTeam />
+            </ProtectedRoute>
+          }
+        />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </main>

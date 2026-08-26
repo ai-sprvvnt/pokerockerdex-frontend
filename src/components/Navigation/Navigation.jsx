@@ -1,7 +1,11 @@
+import { useContext } from 'react';
 import { NavLink } from 'react-router';
+import CurrentUserContext from '../../contexts/CurrentUserContext.js';
 import './Navigation.css';
 
-function Navigation({ onResetExplorer }) {
+function Navigation({ onResetExplorer, onLoginClick, onRegisterClick }) {
+  const { loggedIn, isAuthChecking, onLogout } = useContext(CurrentUserContext);
+
   const getLinkClassName = ({ isActive }) =>
     `navigation__link${isActive ? ' navigation__link_active' : ''}`;
 
@@ -19,11 +23,48 @@ function Navigation({ onResetExplorer }) {
           </NavLink>
         </li>
 
-        <li className="navigation__item">
-          <NavLink className={getLinkClassName} to="/my-team">
-            Mi equipo
-          </NavLink>
-        </li>
+        {!isAuthChecking &&
+          (loggedIn ? (
+            <>
+              <li className="navigation__item">
+                <NavLink className={getLinkClassName} to="/my-team">
+                  Mi equipo
+                </NavLink>
+              </li>
+
+              <li className="navigation__item">
+                <button
+                  className="navigation__button"
+                  type="button"
+                  onClick={onLogout}
+                >
+                  Cerrar sesión
+                </button>
+              </li>
+            </>
+          ) : (
+            <>
+              <li className="navigation__item">
+                <button
+                  className="navigation__button"
+                  type="button"
+                  onClick={onLoginClick}
+                >
+                  Iniciar sesión
+                </button>
+              </li>
+
+              <li className="navigation__item">
+                <button
+                  className="navigation__button"
+                  type="button"
+                  onClick={onRegisterClick}
+                >
+                  Registrarse
+                </button>
+              </li>
+            </>
+          ))}
       </ul>
     </nav>
   );

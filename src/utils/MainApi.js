@@ -24,19 +24,65 @@ async function checkResponse(response) {
   throw error;
 }
 
-async function getTeam(signal) {
-  const response = await fetch(`${MAIN_API_BASE_URL}/teams`, {
+async function register({ email, password, name }) {
+  const response = await fetch(`${MAIN_API_BASE_URL}/signup`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      email,
+      password,
+      name,
+    }),
+  });
+
+  return checkResponse(response);
+}
+
+async function authorize({ email, password }) {
+  const response = await fetch(`${MAIN_API_BASE_URL}/signin`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      email,
+      password,
+    }),
+  });
+
+  return checkResponse(response);
+}
+
+async function getCurrentUser(token, signal) {
+  const response = await fetch(`${MAIN_API_BASE_URL}/users/me`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
     signal,
   });
 
   return checkResponse(response);
 }
 
-async function addPokemonToTeam(pokemon, signal) {
+async function getTeam(token, signal) {
+  const response = await fetch(`${MAIN_API_BASE_URL}/teams`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    signal,
+  });
+
+  return checkResponse(response);
+}
+
+async function addPokemonToTeam(pokemon, token, signal) {
   const response = await fetch(`${MAIN_API_BASE_URL}/teams/pokemon`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
       id: pokemon.id,
@@ -50,4 +96,27 @@ async function addPokemonToTeam(pokemon, signal) {
   return checkResponse(response);
 }
 
-export { MAIN_API_BASE_URL, getTeam, addPokemonToTeam };
+async function removePokemonFromTeam(pokemonId, token, signal) {
+  const response = await fetch(
+    `${MAIN_API_BASE_URL}/teams/pokemon/${pokemonId}`,
+    {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      signal,
+    },
+  );
+
+  return checkResponse(response);
+}
+
+export {
+  MAIN_API_BASE_URL,
+  register,
+  authorize,
+  getCurrentUser,
+  getTeam,
+  addPokemonToTeam,
+  removePokemonFromTeam,
+};

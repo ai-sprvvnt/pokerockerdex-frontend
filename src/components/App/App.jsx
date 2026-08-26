@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router';
 import Header from '../Header/Header.jsx';
 import Main from '../Main/Main.jsx';
@@ -20,9 +20,53 @@ import {
   POKEMON_PER_PAGE,
   SEARCH_RESULTS_BATCH_SIZE,
 } from '../../utils/constants.js';
+import CurrentUserContext from '../../contexts/CurrentUserContext.js';
+import { authorize, getCurrentUser } from '../../utils/MainApi.js';
 import './App.css';
+import Login from '../Login/Login.jsx';
+import Register from '../Register/Register.jsx';
+import RegistrationSuccess from '../RegistrationSuccess/RegistrationSuccess.jsx';
+
+const TOKEN_STORAGE_KEY = 'jwt';
 
 function App() {
+  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isRegistrationSuccessOpen, setIsRegistrationSuccessOpen] =
+    useState(false);
+  const handleOpenLogin = useCallback(() => {
+    setIsRegisterOpen(false);
+    setIsRegistrationSuccessOpen(false);
+    setIsLoginOpen(true);
+  }, []);
+
+  const handleCloseLogin = useCallback(() => {
+    setIsLoginOpen(false);
+  }, []);
+
+  const handleOpenRegister = useCallback(() => {
+    setIsLoginOpen(false);
+    setIsRegistrationSuccessOpen(false);
+    setIsRegisterOpen(true);
+  }, []);
+
+  const handleCloseRegister = useCallback(() => {
+    setIsRegisterOpen(false);
+  }, []);
+
+  const handleRegistrationSuccess = useCallback(() => {
+    setIsRegisterOpen(false);
+    setIsRegistrationSuccessOpen(true);
+  }, []);
+
+  const handleCloseRegistrationSuccess = useCallback(() => {
+    setIsRegistrationSuccessOpen(false);
+  }, []);
+
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isAuthChecking, setIsAuthChecking] = useState(() =>
+    Boolean(localStorage.getItem(TOKEN_STORAGE_KEY)),
+  );
   const [initialLastSearch] = useState(() => getLastSearchCache());
   const [pokemon, setPokemon] = useState(
     () => initialLastSearch?.results ?? [],
@@ -71,6 +115,80 @@ function App() {
 
   const { pathname } = useLocation();
   const isExplorerRoute = pathname === '/';
+
+  const handleLogin = useCallback(async ({ email, password }) => {
+    const { token } = await authorize({ email, password });
+
+    localStorage.setItem(TOKEN_STORAGE_KEY, token);
+
+    try {
+      const user = await getCurrentUser(token);
+
+      setCurrentUser(user);
+
+      return user;
+    } catch (error) {
+      if (error.status === 401) {
+        localStorage.removeItem(TOKEN_STORAGE_KEY);
+      }
+
+      setCurrentUser(null);
+
+      throw error;
+    }
+  }, []);
+
+  const handleLogout = useCallback(() => {
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
+    setCurrentUser(null);
+  }, []);
+
+  const loggedIn = currentUser !== null;
+
+  const currentUserContextValue = useMemo(
+    () => ({
+      currentUser,
+      loggedIn,
+      isAuthChecking,
+      onLogin: handleLogin,
+      onLogout: handleLogout,
+    }),
+    [currentUser, loggedIn, isAuthChecking, handleLogin, handleLogout],
+  );
+
+  useEffect(() => {
+    const token = localStorage.getItem(TOKEN_STORAGE_KEY);
+
+    if (!token) {
+      return undefined;
+    }
+
+    const controller = new AbortController();
+
+    getCurrentUser(token, controller.signal)
+      .then((user) => {
+        setCurrentUser(user);
+      })
+      .catch((error) => {
+        if (error.name === 'AbortError') {
+          return;
+        }
+
+        if (error.status === 401) {
+          localStorage.removeItem(TOKEN_STORAGE_KEY);
+          setCurrentUser(null);
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setIsAuthChecking(false);
+        }
+      });
+
+    return () => {
+      controller.abort();
+    };
+  }, []);
 
   useEffect(() => {
     if (isSearchMode || !isExplorerRoute) {
@@ -403,33 +521,49 @@ function App() {
   const canShowMore = isSearchMode && visibleSearchCount < searchMatches.length;
 
   return (
-    <div className="page">
-      <Header onResetExplorer={handleResetExplorer} />
-
-      <Main
-        pokemon={pokemon}
-        totalPokemon={totalPokemon}
-        currentPage={currentPage}
-        isLoading={isLoading}
-        apiError={apiError}
-        isSearchMode={isSearchMode}
-        searchQuery={searchQuery}
-        isRefreshing={isRefreshing}
-        isCacheFallback={isCacheFallback}
-        onSearchQueryChange={setSearchQuery}
-        onSearch={handleSearch}
-        onResetExplorer={handleResetExplorer}
-        onPreviousPage={handlePreviousPage}
-        onNextPage={handleNextPage}
-        onRetry={handleRetry}
-        isLoadingMore={isLoadingMore}
-        loadMoreError={loadMoreError}
-        canShowMore={canShowMore}
-        onShowMore={handleShowMore}
+    <CurrentUserContext.Provider value={currentUserContextValue}>
+      <div className="page">
+        <Header
+          onResetExplorer={handleResetExplorer}
+          onLoginClick={handleOpenLogin}
+          onRegisterClick={handleOpenRegister}
+        />
+        <Main
+          pokemon={pokemon}
+          totalPokemon={totalPokemon}
+          currentPage={currentPage}
+          isLoading={isLoading}
+          apiError={apiError}
+          isSearchMode={isSearchMode}
+          searchQuery={searchQuery}
+          isRefreshing={isRefreshing}
+          isCacheFallback={isCacheFallback}
+          onSearchQueryChange={setSearchQuery}
+          onSearch={handleSearch}
+          onResetExplorer={handleResetExplorer}
+          onPreviousPage={handlePreviousPage}
+          onNextPage={handleNextPage}
+          onRetry={handleRetry}
+          isLoadingMore={isLoadingMore}
+          loadMoreError={loadMoreError}
+          canShowMore={canShowMore}
+          onShowMore={handleShowMore}
+          onLoginRequired={handleOpenLogin}
+        />
+        <Footer />
+      </div>
+      <Login isOpen={isLoginOpen} onClose={handleCloseLogin} />
+      <Register
+        isOpen={isRegisterOpen}
+        onClose={handleCloseRegister}
+        onRegistrationSuccess={handleRegistrationSuccess}
       />
-
-      <Footer />
-    </div>
+      <RegistrationSuccess
+        isOpen={isRegistrationSuccessOpen}
+        onClose={handleCloseRegistrationSuccess}
+        onLoginClick={handleOpenLogin}
+      />
+    </CurrentUserContext.Provider>
   );
 }
 
